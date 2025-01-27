@@ -46,8 +46,9 @@ const TowerSchema = new mongoose.Schema({
   ci: { type: String, required: true, unique: true },
   pci: { type: String, required: true },
   signal_power: { type: String, required: true },
-  signal_quality: { type: String, required: true }
-});
+  signal_quality: { type: String, required: true },
+  locationChanged: { type: Boolean, default: false },
+}, { timestamps: true });
 
 const Tower = mongoose.model('Tower', TowerSchema);
 

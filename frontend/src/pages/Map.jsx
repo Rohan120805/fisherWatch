@@ -1,57 +1,56 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// Fix for default marker icons in Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
 
 const styles = {
   container: {
+    width: '100%',
+    height: '100vh',
+    padding: '20px',
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    width: '100%',
-    padding: '2rem'
-  },
-  mapContainer: {
-    height: '70vh',
-    width: '1200px',
-    maxWidth: '1200px',
-    borderRadius: '8px',
-    border: '2px solid #646cff',
-    zIndex: 1,
-    margin: '0 auto'
+    boxSizing: 'border-box'
   },
   filterContainer: {
-    marginBottom: '1rem',
+    marginBottom: '20px',
     display: 'flex',
-    gap: '1rem',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '1rem',
-    width: '100%'
-  },
-  select: {
-    padding: '0.5rem',
-    borderRadius: '4px',
-    backgroundColor: '#2a2a2a',
-    color: 'white',
-    border: '1px solid #646cff',
-    cursor: 'pointer'
+    gap: '20px'
   },
   label: {
-    marginRight: '0.5rem',
-    color: '#646cff'
+    marginRight: '10px',
+    fontWeight: 'bold'
+  },
+  select: {
+    padding: '5px',
+    borderRadius: '4px'
+  },
+  mapContainer: {
+    flex: 1,
+    position: 'relative',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    minHeight: '500px'
   }
 };
+
+const normalIcon = new Icon({
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
+
+const warningIcon = new Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34]
+});
 
 function Map() {
   const [towers, setTowers] = useState([]);
@@ -65,7 +64,6 @@ function Map() {
   const operators = [...new Set(towers.map(tower => tower.operator_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
 
-  // Function to fetch tower data
   const fetchTowers = async () => {
     try {
       const response = await fetch('/api/towers');
@@ -79,18 +77,10 @@ function Map() {
     }
   };
 
-  // Initial data fetch
   useEffect(() => {
     fetchTowers();
-  }, []);
-
-  // Set up polling for updates
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchTowers();
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
+    const intervalId = setInterval(fetchTowers, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
   const filteredTowers = towers.filter(tower => {
@@ -99,7 +89,6 @@ function Map() {
     return true;
   });
 
-  // Set default center to a fallback position if no towers are available
   const defaultCenter = [0, 0];
   const center = filteredTowers.length > 0 && filteredTowers[0].analysis_report?.pcaps[0]?.gnss_position
     ? [
@@ -148,10 +137,11 @@ function Map() {
           center={center} 
           zoom={5} 
           style={{ height: '100%', width: '100%' }}
+          scrollWheelZoom={true}
         >
           <TileLayer
-            url="https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {filteredTowers.map((tower) => {
             const position = tower.analysis_report?.pcaps[0]?.gnss_position;
@@ -159,12 +149,18 @@ function Map() {
 
             return (
               <Marker 
-                key={`${tower.ci}-${tower.timestamp}`} // Add timestamp for uniqueness
+                key={`${tower.ci}-${tower.timestamp}`}
                 position={[position.latitude, position.longitude]}
+                icon={tower.locationChanged ? warningIcon : normalIcon}
               >
                 <Popup>
                   <div>
                     <h3>Tower Details</h3>
+                    {tower.locationChanged && (
+                      <p style={{color: 'red', fontWeight: 'bold'}}>
+                        Warning: Tower location has changed since the last scan!
+                      </p>
+                    )}
                     <p>Operator: {tower.operator_str}</p>
                     <p>Technology: {tower.rat}</p>
                     <p>MNC: {tower.mnc}</p>

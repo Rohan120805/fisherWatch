@@ -7,7 +7,7 @@ function RotatingGlobe() {
   const globeRef = useRef()
   const mousePosition = useRef({ x: 0, y: 0 })
   const lastMouseMove = useRef(Date.now())
-  const defaultRotationSpeed = 0.007
+  const defaultRotationSpeed = 0.001
   const lerpSpeed = 0.1
 
   // Load Earth textures
