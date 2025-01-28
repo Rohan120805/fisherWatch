@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 const styles = {
   container: {
     width: '100%',
-    height: '100vh',
+    height: '80vh',
     padding: '20px',
     display: 'flex',
     flexDirection: 'column',
@@ -30,7 +30,7 @@ const styles = {
     position: 'relative',
     borderRadius: '8px',
     overflow: 'hidden',
-    minHeight: '500px'
+    minHeight: '520px'
   }
 };
 
@@ -101,6 +101,7 @@ function Map() {
   if (error) return <div style={styles.container}>Error: {error}</div>;
 
   return (
+    <>
     <div style={styles.container}>
       <div style={styles.filterContainer}>
         <div>
@@ -179,6 +180,7 @@ function Map() {
         </MapContainer>
       </div>
     </div>
+    </>
   );
 }
 

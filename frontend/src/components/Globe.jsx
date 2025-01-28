@@ -19,9 +19,11 @@ function RotatingGlobe() {
     'src/assets/earth/galaxy_starfield.png',
   ])
 
-  useFrame(() => {
+  useFrame(({ mouse }) => {
     if (!globeRef.current) return
 
+    // Update mouse position from Three.js mouse coordinates
+    mousePosition.current = { x: mouse.x, y: mouse.y }
     const timeSinceLastMove = Date.now() - lastMouseMove.current
     const isMouseStatic = timeSinceLastMove > 100
 
@@ -41,17 +43,18 @@ function RotatingGlobe() {
         lerpSpeed
       )
     } else {
-      // Follow mouse position
+      // Follow mouse position with enhanced sensitivity
       globeRef.current.position.x = THREE.MathUtils.lerp(
         globeRef.current.position.x,
-        mousePosition.current.x * 0.3,
+        mousePosition.current.x * 0.5,
         lerpSpeed
       )
       globeRef.current.position.y = THREE.MathUtils.lerp(
         globeRef.current.position.y,
-        mousePosition.current.y * 0.3,
+        mousePosition.current.y * 0.5,
         lerpSpeed
       )
+      lastMouseMove.current = Date.now()
     }
   })
 
@@ -64,11 +67,11 @@ function RotatingGlobe() {
 
       {/* Earth sphere */}
       <group ref={globeRef}>
-        <Sphere args={[1.5, 64, 64]}>
+        <Sphere args={[1.4, 64, 64]}>
           <meshPhongMaterial
             map={colorMap}
             bumpMap={bumpMap}
-            bumpScale={0.5}
+            bumpScale={1}
             specularMap={waterMap}
             specular={new THREE.Color(0x666666)}
             shininess={5}
@@ -76,12 +79,22 @@ function RotatingGlobe() {
         </Sphere>
 
         {/* Cloud layer */}
-        <Sphere args={[1, 64, 64]}>
+        <Sphere args={[1.5, 64, 64]}>
           <meshPhongMaterial
             map={cloudsMap}
             transparent={true}
-            opacity={0.4}
+            opacity={0.9}
             depthWrite={false}
+          />
+        </Sphere>
+
+        {/* Wire sphere */}
+        <Sphere args={[1.6, 32, 32]}>
+          <meshBasicMaterial
+            color="#ffffff"
+            wireframe={true}
+            transparent={true}
+            opacity={0.1}
           />
         </Sphere>
       </group>
@@ -90,17 +103,6 @@ function RotatingGlobe() {
 }
 
 function Globe() {
-  const mousePosition = useRef({ x: 0, y: 0 })
-  const lastMouseMove = useRef(Date.now())
-
-  const handleMouseMove = (event) => {
-    mousePosition.current = {
-      x: (event.clientX / window.innerWidth) * 2 - 1,
-      y: -(event.clientY / window.innerHeight) * 2 + 1
-    }
-    lastMouseMove.current = Date.now()
-  }
-
   return (
     <div 
       style={{
@@ -112,7 +114,6 @@ function Globe() {
         zIndex: -1,
         backgroundColor: '#000'
       }}
-      onMouseMove={handleMouseMove}
     >
       <Canvas camera={{ position: [0, 0, 2.6] }}>
         <ambientLight intensity={0.1} />
