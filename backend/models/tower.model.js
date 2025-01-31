@@ -13,7 +13,7 @@ const GnssPositionSchema = new mongoose.Schema({
   latitude: { type: String, required: true },
   longitude: { type: String },
   hdop: { type: String },
-  altitude: { type: String },
+  altitude: { type: String }, 
   fix: { type: String, required: true },
   cog: { type: String },
   spkm: { type: String },
@@ -35,20 +35,34 @@ const AnalysisReportSchema = new mongoose.Schema({
 });
 
 const TowerSchema = new mongoose.Schema({
+  // Kingfisher metadata
+  kingfisher_id: { type: String, required: true },
+  kingfisher_version: { type: String, required: true },
+  last_modified: { type: Date, required: true },
+  kingfisher_id_changed: { type: Boolean, default: false },
+
+  // Network information
   rat: { type: String, required: true },
   operator_str: { type: String, required: true },
   operator_short_str: { type: String, required: true },
   mnc: { type: String, required: true },
   mcc: { type: String, required: true },
-  analysis_report: { type: AnalysisReportSchema, required: true },
+  
+  // Technical details
   tac: { type: String, required: true },
   freq: { type: String, required: true },
   ci: { type: String, required: true, unique: true },
   pci: { type: String, required: true },
+  
+  // Signal metrics
   signal_power: { type: String, required: true },
   signal_quality: { type: String, required: true },
-  locationChanged: { type: Boolean, default: false },
-}, { timestamps: true });
+
+  // Analysis data
+  analysis_report: { type: AnalysisReportSchema, required: true }
+}, {
+  timestamps: true // Adds createdAt and updatedAt fields
+});
 
 const Tower = mongoose.model('Tower', TowerSchema);
 

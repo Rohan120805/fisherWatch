@@ -6,31 +6,52 @@ import 'leaflet/dist/leaflet.css';
 const styles = {
   container: {
     width: '100%',
-    height: '80vh',
-    padding: '20px',
+    height: '100vh',
     display: 'flex',
-    flexDirection: 'column',
-    boxSizing: 'border-box'
+    flexDirection: 'row',
+    gap: '5px',
+    boxSizing: 'border-box',
+    alignItems: 'flex-end',
   },
   filterContainer: {
-    marginBottom: '20px',
+    alignSelf: 'flex-left',
+    width: '250px',
+    minWidth: '200px',
+    padding: '10px',
     display: 'flex',
-    gap: '20px'
+    flexDirection: 'column',
+    gap: '20px',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '8px',
+    height: '88vh',
+    overflowY: 'auto',
+  },
+  filterGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '5px'
   },
   label: {
-    marginRight: '10px',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    color: '#646cff',
+    marginBottom: '8px'
   },
-  select: {
-    padding: '5px',
-    borderRadius: '4px'
+  checkboxLabel: {
+    display: 'flex',
+    alignItems: 'flex-left',
+    gap: '8px',
+    color: '#ffffff'
+  },
+  checkbox: {
+    margin: 0
   },
   mapContainer: {
-    flex: 1,
-    position: 'relative',
+    position: 'end',
     borderRadius: '8px',
     overflow: 'hidden',
-    minHeight: '520px'
+    height: '720px',
+    width: '1750px',
+    alignSelf: 'flex-end'
   }
 };
 
@@ -57,8 +78,8 @@ function Map() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
-    operator: 'all',
-    technology: 'all'
+    operator: [],
+    technology: []
   });
 
   const operators = [...new Set(towers.map(tower => tower.operator_str))];
@@ -83,9 +104,18 @@ function Map() {
     return () => clearInterval(intervalId);
   }, []);
 
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterType]: prevFilters[filterType].includes(value)
+        ? prevFilters[filterType].filter(item => item !== value)
+        : [...prevFilters[filterType], value]
+    }));
+  };
+
   const filteredTowers = towers.filter(tower => {
-    if (filters.operator !== 'all' && tower.operator_str !== filters.operator) return false;
-    if (filters.technology !== 'all' && tower.rat !== filters.technology) return false;
+    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_str)) return false;
+    if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     return true;
   });
 
@@ -97,39 +127,47 @@ function Map() {
       ]
     : defaultCenter;
 
-  if (loading) return <div style={styles.container}>Loading map data...</div>;
-  if (error) return <div style={styles.container}>Error: {error}</div>;
+  if (loading) return <div>Loading map data...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
-    <>
     <div style={styles.container}>
       <div style={styles.filterContainer}>
-        <div>
-          <label style={styles.label}>Service Provider:</label>
-          <select 
-            style={styles.select}
-            value={filters.operator}
-            onChange={(e) => setFilters({...filters, operator: e.target.value})}
-          >
-            <option value="all">All Providers</option>
-            {operators.map(op => (
-              <option key={op} value={op}>{op}</option>
-            ))}
-          </select>
+      <input
+          type="text"
+          placeholder="Search by CI number"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={styles.searchInput}
+        />
+        <div style={styles.filterGroup}>
+          <div style={styles.label}>Service Provider</div>
+          {operators.map(op => (
+            <label key={op} style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                style={styles.checkbox}
+                checked={filters.operator.includes(op)}
+                onChange={() => handleFilterChange('operator', op)}
+              />
+              {op}
+            </label>
+          ))}
         </div>
 
-        <div>
-          <label style={styles.label}>Technology:</label>
-          <select 
-            style={styles.select}
-            value={filters.technology}
-            onChange={(e) => setFilters({...filters, technology: e.target.value})}
-          >
-            <option value="all">All Technologies</option>
-            {technologies.map(tech => (
-              <option key={tech} value={tech}>{tech}</option>
-            ))}
-          </select>
+        <div style={styles.filterGroup}>
+          <div style={styles.label}>Technology</div>
+          {technologies.map(tech => (
+            <label key={tech} style={styles.checkboxLabel}>
+              <input
+                type="checkbox"
+                style={styles.checkbox}
+                checked={filters.technology.includes(tech)}
+                onChange={() => handleFilterChange('technology', tech)}
+              />
+              {tech}
+            </label>
+          ))}
         </div>
       </div>
 
@@ -137,7 +175,7 @@ function Map() {
         <MapContainer 
           center={center} 
           zoom={5} 
-          style={{ height: '100%', width: '100%' }}
+          style={styles.mapContainer}
           scrollWheelZoom={true}
         >
           <TileLayer
@@ -152,26 +190,22 @@ function Map() {
               <Marker 
                 key={`${tower.ci}-${tower.timestamp}`}
                 position={[position.latitude, position.longitude]}
-                icon={tower.locationChanged ? warningIcon : normalIcon}
+                icon={tower.kingfisher_id_changed ? warningIcon : normalIcon}
               >
                 <Popup>
                   <div>
                     <h3>Tower Details</h3>
-                    {tower.locationChanged && (
+                    {tower.kingfisher_id_changed && (
                       <p style={{color: 'red', fontWeight: 'bold'}}>
-                        Warning: Tower location has changed since the last scan!
+                        Warning: This tower has been detected by a different Kingfisher device.
                       </p>
                     )}
                     <p>Operator: {tower.operator_str}</p>
                     <p>Technology: {tower.rat}</p>
-                    <p>MNC: {tower.mnc}</p>
-                    <p>TAC: {tower.tac}</p>
                     <p>CI: {tower.ci}</p>
-                    <p>PCI: {tower.pci}</p>
                     <p>Frequency: {tower.freq}</p>
                     <p>Signal Power: {tower.signal_power} dBm</p>
                     <p>Signal Quality: {tower.signal_quality} dB</p>
-                    <p>Last Updated: {new Date(tower.timestamp).toLocaleString()}</p>
                   </div>
                 </Popup>
               </Marker>
@@ -180,7 +214,6 @@ function Map() {
         </MapContainer>
       </div>
     </div>
-    </>
   );
 }
 

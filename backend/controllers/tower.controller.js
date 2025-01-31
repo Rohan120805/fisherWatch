@@ -1,11 +1,14 @@
 import Tower from '../models/tower.model.js';
 
 export const addOrUpdateTowers = async (req, res) => {
-  const towersData = req.body;
+  const data = req.body;
 
-  if (!Array.isArray(towersData)) {
+  // Check if the request body has the expected structure
+  if (!data || !Array.isArray(data.data)) {
     return res.status(400).json({ message: 'Data should be an array of tower objects' });
   }
+
+  const towersData = data.data;
 
   try {
     const results = await Promise.all(towersData.map(async (towerData) => {
@@ -13,33 +16,35 @@ export const addOrUpdateTowers = async (req, res) => {
       let tower = await Tower.findOne({ ci, pci, mnc });
   
       if (tower) {
-        // Check if location has changed significantly (using ~10m threshold)
-        const oldPosition = tower.analysis_report?.pcaps[0]?.gnss_position;
-        const newPosition = towerData.analysis_report?.pcaps[0]?.gnss_position;
-        
-        const locationChanged = oldPosition && newPosition && (
-          Math.abs(oldPosition.latitude - newPosition.latitude) > 0.0001 || 
-          Math.abs(oldPosition.longitude - newPosition.longitude) > 0.0001
-        );
+        // Check if kingfisher_id has changed
+        const kingfisher_id_changed = tower.kingfisher_id !== data.kingfisher_id;
 
-        // Add locationChanged flag to tower data
+        // Update existing tower with timestamps
         tower = await Tower.findOneAndUpdate(
           { ci, pci, mnc },
-          { ...towerData, locationChanged },
+          {
+            ...towerData,
+            kingfisher_id: data.kingfisher_id,
+            kingfisher_version: data.kingfisher_version,
+            last_modified: data.last_modified,
+            kingfisher_id_changed // Set the kingfisher_id_changed flag
+          },
           { new: true }
         );
       } else {
-        // Create new tower with locationChanged set to false initially
+        // Create new tower with kingfisher metadata
         tower = new Tower({
           ...towerData,
-          locationChanged: false
+          kingfisher_id: data.kingfisher_id,
+          kingfisher_version: data.kingfisher_version,
+          last_modified: data.last_modified
         });
         await tower.save();
       }
       return tower;
     }));
 
-    res.status(200).json(results.map(r => r.tower));
+    res.status(200).json(results);
   } catch (error) {
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);

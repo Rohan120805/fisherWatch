@@ -10,24 +10,25 @@ const styles = {
     bottom: 0,
     padding: '1rem',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     backgroundColor: '#121212'
   },
   filterContainer: {
     display: 'flex',
+    flexDirection: 'column',
     gap: '1rem',
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
     padding: '1rem',
-    width: '100%'
+    width: '250px',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '8px',
+    marginLeft: 'auto'
   },
-  select: {
-    padding: '0.5rem',
-    borderRadius: '4px',
-    backgroundColor: '#2a2a2a',
-    color: 'white',
-    border: '1px solid #646cff',
-    cursor: 'pointer'
+  checkboxGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem'
   },
   label: {
     marginRight: '0.5rem',
@@ -53,10 +54,10 @@ const styles = {
   td: {
     padding: '12px',
     borderBottom: '1px solid #333',
-    transition: 'background-color 0.3s ease' // Add transition for smooth updates
+    transition: 'background-color 0.3s ease'
   },
   updatedRow: {
-    backgroundColor: 'rgba(100, 108, 255, 0.2)' // Highlight updated rows
+    backgroundColor: 'rgba(100, 108, 255, 0.2)'
   },
   loadingText: {
     textAlign: 'center',
@@ -139,20 +140,17 @@ function TowerDetails({ tower, open, onClose }) {
 
   return (
     <Dialog 
-      open={open}
+      open={open} 
       onClose={onClose}
-      PaperProps={{
-        style: styles.dialog
-      }}
+      PaperProps={{ style: styles.dialog }}
     >
       <div style={styles.dialogContent}>
         <div style={styles.dialogTitle}>
           Tower Details
-          <button style={styles.closeButton} onClick={onClose}>
-            Close
-          </button>
+          <button style={styles.closeButton} onClick={onClose}>Close</button>
         </div>
 
+        {/* Basic Information Section */}
         <div style={styles.dialogSection}>
           <div style={styles.dialogSectionTitle}>Basic Information</div>
           <div style={styles.dialogRow}>
@@ -169,6 +167,7 @@ function TowerDetails({ tower, open, onClose }) {
           </div>
         </div>
 
+        {/* Network Information Section */}
         <div style={styles.dialogSection}>
           <div style={styles.dialogSectionTitle}>Network Information</div>
           <div style={styles.dialogRow}>
@@ -191,8 +190,13 @@ function TowerDetails({ tower, open, onClose }) {
             <span style={styles.dialogLabel}>PCI:</span>
             <span>{tower.pci}</span>
           </div>
+          <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Frequency:</span>
+            <span>{tower.freq}</span>
+          </div>
         </div>
 
+        {/* Signal Information Section */}
         <div style={styles.dialogSection}>
           <div style={styles.dialogSectionTitle}>Signal Information</div>
           <div style={styles.dialogRow}>
@@ -203,16 +207,9 @@ function TowerDetails({ tower, open, onClose }) {
             <span style={styles.dialogLabel}>Signal Quality:</span>
             <span>{tower.signal_quality} dB</span>
           </div>
-          <div style={styles.dialogRow}>
-            <span style={styles.dialogLabel}>EARFCN:</span>
-            <span>{tower.earfcn}</span>
-          </div>
-          <div style={styles.dialogRow}>
-            <span style={styles.dialogLabel}>Band:</span>
-            <span>{tower.band}</span>
-          </div>
         </div>
 
+        {/* Analysis Report Section */}
         {tower.analysis_report && (
           <div style={styles.dialogSection}>
             <div style={styles.dialogSectionTitle}>Analysis Report</div>
@@ -220,10 +217,34 @@ function TowerDetails({ tower, open, onClose }) {
               <span style={styles.dialogLabel}>Score:</span>
               <span>{tower.analysis_report.score}</span>
             </div>
-            <div style={styles.dialogRow}>
-              <span style={styles.dialogLabel}>Distance:</span>
-              <span>{tower.analysis_report.distance_in_meters} meters</span>
-            </div>
+            {tower.analysis_report.distance_in_meters && (
+              <div style={styles.dialogRow}>
+                <span style={styles.dialogLabel}>Distance:</span>
+                <span>{tower.analysis_report.distance_in_meters} meters</span>
+              </div>
+            )}
+            {tower.analysis_report.pcaps && tower.analysis_report.pcaps[0]?.gnss_position && (
+              <div style={styles.dialogRow}>
+                <span style={styles.dialogLabel}>Location:</span>
+                <span>
+                  Lat: {tower.analysis_report.pcaps[0].gnss_position.latitude}, 
+                  Lon: {tower.analysis_report.pcaps[0].gnss_position.longitude}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Additional Information Section */}
+        {tower.fingerprints && Object.keys(tower.fingerprints).length > 0 && (
+          <div style={styles.dialogSection}>
+            <div style={styles.dialogSectionTitle}>Fingerprints</div>
+            {Object.entries(tower.fingerprints).map(([key, value]) => (
+              <div key={key} style={styles.dialogRow}>
+                <span style={styles.dialogLabel}>{key}:</span>
+                <span>{JSON.stringify(value)}</span>
+              </div>
+            ))}
           </div>
         )}
       </div>
@@ -237,22 +258,19 @@ function Data() {
   const [error, setError] = useState(null);
   const [selectedTower, setSelectedTower] = useState(null);
   const [filters, setFilters] = useState({
-    operator: 'all',
-    technology: 'all'
+    operator: [],
+    technology: []
   });
   const [updatedTowers, setUpdatedTowers] = useState(new Set());
 
   const operators = [...new Set(towers.map(tower => tower.operator_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
 
-  // Function to fetch tower data
   const fetchTowers = async () => {
     try {
       const response = await fetch('/api/towers');
       if (!response.ok) throw new Error('Failed to fetch tower data');
       const newData = await response.json();
-      
-      // Track which towers have been updated
       const updatedIds = new Set();
       newData.forEach(newTower => {
         const existingTower = towers.find(t => t.ci === newTower.ci);
@@ -260,13 +278,9 @@ function Data() {
           updatedIds.add(newTower.ci);
         }
       });
-      
       setTowers(newData);
       setUpdatedTowers(updatedIds);
-      
-      // Clear updated status after animation
       setTimeout(() => setUpdatedTowers(new Set()), 3000);
-      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -274,23 +288,24 @@ function Data() {
     }
   };
 
-  // Initial data fetch
   useEffect(() => {
     fetchTowers();
+    const intervalId = setInterval(fetchTowers, 5000);
+    return () => clearInterval(intervalId);
   }, []);
 
-  // Set up polling for updates
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      fetchTowers();
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [towers]); // Add towers as dependency to access it in fetchTowers
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterType]: prevFilters[filterType].includes(value)
+        ? prevFilters[filterType].filter(item => item !== value) // Remove if already selected
+        : [...prevFilters[filterType], value] // Add if not selected
+    }));
+  };
 
   const filteredTowers = towers.filter(tower => {
-    if (filters.operator !== 'all' && tower.operator_str !== filters.operator) return false;
-    if (filters.technology !== 'all' && tower.rat !== filters.technology) return false;
+    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_str)) return false;
+    if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     return true;
   });
 
@@ -299,36 +314,6 @@ function Data() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.filterContainer}>
-        <div>
-          <label style={styles.label}>Service Provider:</label>
-          <select 
-            style={styles.select}
-            value={filters.operator}
-            onChange={(e) => setFilters({...filters, operator: e.target.value})}
-          >
-            <option value="all">All Providers</option>
-            {operators.map(op => (
-              <option key={op} value={op}>{op}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label style={styles.label}>Technology:</label>
-          <select 
-            style={styles.select}
-            value={filters.technology}
-            onChange={(e) => setFilters({...filters, technology: e.target.value})}
-          >
-            <option value="all">All Technologies</option>
-            {technologies.map(tech => (
-              <option key={tech} value={tech}>{tech}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
       <div style={styles.tableWrapper}>
         <table style={styles.table}>
           <thead>
@@ -340,8 +325,7 @@ function Data() {
               <th style={styles.th}>TAC</th>
               <th style={styles.th}>CI</th>
               <th style={styles.th}>PCI</th>
-              <th style={styles.th}>EARFCN</th>
-              <th style={styles.th}>Band</th>
+              <th style={styles.th}>Frequency</th>
               <th style={styles.th}>Signal Power</th>
               <th style={styles.th}>Signal Quality</th>
               <th style={styles.th}>Last Update</th>
@@ -364,8 +348,7 @@ function Data() {
                 <td style={styles.td}>{tower.tac}</td>
                 <td style={styles.td}>{tower.ci}</td>
                 <td style={styles.td}>{tower.pci}</td>
-                <td style={styles.td}>{tower.earfcn}</td>
-                <td style={styles.td}>{tower.band}</td>
+                <td style={styles.td}>{tower.freq}</td>
                 <td style={styles.td}>{tower.signal_power} dBm</td>
                 <td style={styles.td}>{tower.signal_quality} dB</td>
                 <td style={styles.td}>{new Date(tower.timestamp).toLocaleString()}</td>
@@ -381,6 +364,44 @@ function Data() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div style={styles.filterContainer}>
+        <div>
+          <label style={styles.label}>Service Provider:</label>
+          <div style={styles.checkboxGroup}>
+            {operators.map(op => (
+              <label key={op}>
+                <input 
+                  type="checkbox" 
+                  name="operator" 
+                  value={op} 
+                  checked={filters.operator.includes(op)} 
+                  onChange={(e) => handleFilterChange('operator', e.target.value)}
+                />
+                {op}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Technology:</label>
+          <div style={styles.checkboxGroup}>
+            {technologies.map(tech => (
+              <label key={tech}>
+                <input 
+                  type="checkbox" 
+                  name="technology" 
+                  value={tech} 
+                  checked={filters.technology.includes(tech)} 
+                  onChange={(e) => handleFilterChange('technology', e.target.value)}
+                />
+                {tech}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
 
       {selectedTower && (
