@@ -6,6 +6,8 @@ import towerRoutes from './routes/tower.routes.js';
 import { clerkMiddleware } from '@clerk/express';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import https from 'https';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,7 +18,7 @@ const app = express();
 
 // CORS configuration with security headers
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
+  origin: ['http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -28,12 +30,10 @@ app.use(cors({
   maxAge: 600
 }));
 
-// Security headers
 app.use((req, res, next) => {
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  if (!req.client.authorized) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
   next();
 });
 
@@ -47,10 +47,19 @@ connectDB();
 // API routes
 app.use('/api', towerRoutes);
 
+// Load certificates and keys
+const options = {
+  key: fs.readFileSync(path.join(__dirname, '../certs/server/server.key')),
+  cert: fs.readFileSync(path.join(__dirname, '../certs/server/server.crt')),
+  ca: fs.readFileSync(path.join(__dirname, '../certs/ca.crt')),
+  requestCert: true,
+  rejectUnauthorized: true
+};
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Server running on https://localhost:${PORT}`);
 }).on('error', (err) => {
   console.error('Server error:', err);
 });

@@ -107,7 +107,13 @@ function Map() {
 
   const fetchTowers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/towers');
+      const response = await fetch('/api/towers', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       if (!response.ok) throw new Error('Failed to fetch tower data');
       const newData = await response.json();
       setTowers(newData);
