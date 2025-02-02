@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from '@mui/material';
+import api from '../config/api.config.js';
 
 const styles = {
   container: {
-    position: 'fixed',
+    position: 'fixed', 
     top: '64px',
     left: 0,
     right: 0,
@@ -133,11 +134,6 @@ const styles = {
 };
 
 function TowerDetails({ tower, open, onClose }) {
-  const getFingerprints = (fingerprints) => {
-    if (!fingerprints) return [];
-    return Object.entries(fingerprints);
-  };
-
   return (
     <Dialog 
       open={open} 
@@ -235,7 +231,7 @@ function TowerDetails({ tower, open, onClose }) {
           </div>
         )}
 
-        {/* Additional Information Section */}
+        {/* Fingerprints Section */}
         {tower.fingerprints && Object.keys(tower.fingerprints).length > 0 && (
           <div style={styles.dialogSection}>
             <div style={styles.dialogSectionTitle}>Fingerprints</div>
@@ -268,19 +264,10 @@ function Data() {
 
   const fetchTowers = async () => {
     try {
-      const response = await fetch('/api/towers');
+      const response = await fetch('http://localhost:5000/api/towers');
       if (!response.ok) throw new Error('Failed to fetch tower data');
       const newData = await response.json();
-      const updatedIds = new Set();
-      newData.forEach(newTower => {
-        const existingTower = towers.find(t => t.ci === newTower.ci);
-        if (!existingTower || existingTower.timestamp !== newTower.timestamp) {
-          updatedIds.add(newTower.ci);
-        }
-      });
       setTowers(newData);
-      setUpdatedTowers(updatedIds);
-      setTimeout(() => setUpdatedTowers(new Set()), 3000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -298,8 +285,8 @@ function Data() {
     setFilters(prevFilters => ({
       ...prevFilters,
       [filterType]: prevFilters[filterType].includes(value)
-        ? prevFilters[filterType].filter(item => item !== value) // Remove if already selected
-        : [...prevFilters[filterType], value] // Add if not selected
+        ? prevFilters[filterType].filter(item => item !== value)
+        : [...prevFilters[filterType], value]
     }));
   };
 

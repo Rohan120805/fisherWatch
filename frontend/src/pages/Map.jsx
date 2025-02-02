@@ -45,6 +45,15 @@ const styles = {
   checkbox: {
     margin: 0
   },
+  searchInput: {
+    padding: '8px',
+    borderRadius: '4px',
+    border: '1px solid #646cff',
+    backgroundColor: '#2a2a2a',
+    color: '#ffffff',
+    width: '100%',
+    boxSizing: 'border-box'
+  },
   mapContainer: {
     position: 'end',
     borderRadius: '8px',
@@ -52,6 +61,16 @@ const styles = {
     height: '720px',
     width: '1750px',
     alignSelf: 'flex-end'
+  },
+  errorMessage: {
+    color: '#ff6b6b',
+    padding: '20px',
+    textAlign: 'center'
+  },
+  loadingMessage: {
+    color: '#ffffff',
+    padding: '20px',
+    textAlign: 'center'
   }
 };
 
@@ -77,6 +96,7 @@ function Map() {
   const [towers, setTowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     operator: [],
     technology: []
@@ -87,13 +107,13 @@ function Map() {
 
   const fetchTowers = async () => {
     try {
-      const response = await fetch('/api/towers');
+      const response = await fetch('http://localhost:5000/api/towers');
       if (!response.ok) throw new Error('Failed to fetch tower data');
-      const data = await response.json();
-      setTowers(data);
-      setLoading(false);
+      const newData = await response.json();
+      setTowers(newData);
     } catch (err) {
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -114,6 +134,7 @@ function Map() {
   };
 
   const filteredTowers = towers.filter(tower => {
+    if (searchTerm && !tower.ci.toString().includes(searchTerm)) return false;
     if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     return true;
@@ -127,13 +148,13 @@ function Map() {
       ]
     : defaultCenter;
 
-  if (loading) return <div>Loading map data...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading) return <div style={styles.loadingMessage}>Loading map data...</div>;
+  if (error) return <div style={styles.errorMessage}>Error: {error}</div>;
 
   return (
     <div style={styles.container}>
       <div style={styles.filterContainer}>
-      <input
+        <input
           type="text"
           placeholder="Search by CI number"
           value={searchTerm}
