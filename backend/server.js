@@ -49,9 +49,9 @@ app.use('/api', towerRoutes);
 
 // Load certificates and keys
 const options = {
-  key: fs.readFileSync(path.join(__dirname, '../certs/server/server.key')),
-  cert: fs.readFileSync(path.join(__dirname, '../certs/server/server.crt')),
-  ca: fs.readFileSync(path.join(__dirname, '../certs/ca.crt')),
+  key: fs.readFileSync(path.join(__dirname, process.env.SSL_KEY_PATH)),
+  cert: fs.readFileSync(path.join(__dirname, process.env.SSL_CERT_PATH)),
+  ca: fs.readFileSync(path.join(__dirname, process.env.SSL_CA_PATH)),
   requestCert: true,
   rejectUnauthorized: true
 };
