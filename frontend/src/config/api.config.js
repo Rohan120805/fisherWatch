@@ -5,10 +5,9 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: true // Important for sending cookies/certificates
+  withCredentials: true
 });
 
-// Add response interceptor for error handling
 api.interceptors.response.use(
   response => response,
   error => {

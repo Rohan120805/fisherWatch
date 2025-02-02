@@ -12,9 +12,9 @@ const clerkFrontendApi = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 const signInContainerStyle = {
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'center', // Centers vertically
-  alignItems: 'center',     // Centers horizontally
-  maxHeight: '100vh',      // Changed from maxHeight to minHeight
+  justifyContent: 'center',
+  alignItems: 'center',
+  maxHeight: '100vh',
   maxWidth: '100%',
   margin: '0 auto',
   padding: '10px',
@@ -27,8 +27,8 @@ const textStyle = {
   width: '100%',
   margin: '0 auto',
   display: 'flex',
-  alignItems: 'center',    // Centers text vertically
-  justifyContent: 'center' // Centers text horizontally
+  alignItems: 'center',
+  justifyContent: 'center'
 };
 
 const appContainerStyle = {
@@ -54,7 +54,7 @@ const contentContainerStyle = {
   justifyContent: 'center',
   alignItems: 'center',
   width: '100%',
-  maxWidth: '1200px', // Add max-width to control content width
+  maxWidth: '1200px',
   margin: '0 auto',
   padding: '20px'
 };
@@ -76,8 +76,6 @@ function App() {
     <div style={appContainerStyle}>
       <div style={contentContainerStyle}>
         <ClerkProvider publishableKey={clerkFrontendApi}>
-          {/* <Hi />
-          <h1 style={textStyle}>Welcome to Fisher Watch. A place where the Towers are monitored</h1> */}
           <SignedOut>
           <Hi />
           <h1 style={textStyle}>Welcome to Fisher Watch.<br></br>A place where the Towers are watched.</h1>

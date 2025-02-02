@@ -3,7 +3,6 @@ import Tower from '../models/tower.model.js';
 export const addOrUpdateTowers = async (req, res) => {
   const data = req.body;
 
-  // Check if the request body has the expected structure
   if (!data || !Array.isArray(data.data)) {
     return res.status(400).json({ message: 'Data should be an array of tower objects' });
   }
@@ -16,10 +15,8 @@ export const addOrUpdateTowers = async (req, res) => {
       let tower = await Tower.findOne({ ci, pci, mnc });
   
       if (tower) {
-        // Check if kingfisher_id has changed
         const kingfisher_id_changed = tower.kingfisher_id !== data.kingfisher_id;
 
-        // Update existing tower with timestamps
         tower = await Tower.findOneAndUpdate(
           { ci, pci, mnc },
           {
@@ -27,12 +24,11 @@ export const addOrUpdateTowers = async (req, res) => {
             kingfisher_id: data.kingfisher_id,
             kingfisher_version: data.kingfisher_version,
             last_modified: data.last_modified,
-            kingfisher_id_changed // Set the kingfisher_id_changed flag
+            kingfisher_id_changed
           },
           { new: true }
         );
       } else {
-        // Create new tower with kingfisher metadata
         tower = new Tower({
           ...towerData,
           kingfisher_id: data.kingfisher_id,

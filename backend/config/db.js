@@ -7,7 +7,6 @@ export const connectDB = async () => {
             throw new Error("MONGO_URI is not defined");
         }
 
-        // Updated connection options
         const options = {
             retryWrites: true,
             w: 'majority',

@@ -16,8 +16,6 @@ function Home() {
     <div style={styles.home}>
       <Navbar />
       <div style={styles.content}>
-        {/* <h1>Welcome to Fisher Watch</h1> */}
-        {/* Add more content here */}
       </div>
     </div>
   );

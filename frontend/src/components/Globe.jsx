@@ -10,7 +10,6 @@ function RotatingGlobe() {
   const defaultRotationSpeed = 0.001
   const lerpSpeed = 0.1
 
-  // Load Earth textures
   const [colorMap, bumpMap, cloudsMap, waterMap, starsMap] = useLoader(THREE.TextureLoader, [
     'src/assets/earth/2_no_clouds_4k.jpg',
     'src/assets/earth/elev_bump_4k.jpg',
@@ -22,16 +21,12 @@ function RotatingGlobe() {
   useFrame(({ mouse }) => {
     if (!globeRef.current) return
 
-    // Update mouse position from Three.js mouse coordinates
     mousePosition.current = { x: mouse.x, y: mouse.y }
     const timeSinceLastMove = Date.now() - lastMouseMove.current
     const isMouseStatic = timeSinceLastMove > 100
 
     if (isMouseStatic) {
-      // Default rotation when mouse is static
       globeRef.current.rotation.y += defaultRotationSpeed
-      
-      // Reset position smoothly to center
       globeRef.current.position.x = THREE.MathUtils.lerp(
         globeRef.current.position.x,
         0,
@@ -43,7 +38,6 @@ function RotatingGlobe() {
         lerpSpeed
       )
     } else {
-      // Follow mouse position with enhanced sensitivity
       globeRef.current.position.x = THREE.MathUtils.lerp(
         globeRef.current.position.x,
         mousePosition.current.x * 0.5,

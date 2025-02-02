@@ -34,7 +34,6 @@ const styles = {
 function Navbar() {
   return (
     <nav style={styles.navbar}>
-      {/* <div style={styles.brand}>Fisher Watch</div> */}
       <div style={styles.brand}><Link to="/">Fisher Watch</Link></div>
       <div style={styles.nav}>
         <Link to="/data" style={styles.link}>Data</Link>
