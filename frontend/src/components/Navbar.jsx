@@ -6,28 +6,38 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '1rem',
+    padding: '1rem 2rem',
     backgroundColor: '#1a1a1a',
-    width: '99%',
+    width: '100%',
     position: 'fixed',
     top: 0,
     left: 0,
+    zIndex: 1000,
+    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+    boxSizing: 'border-box'
   },
   brand: {
-    fontSize: '1.5rem',
+    fontSize: '1.75rem',
     fontWeight: 'bold',
+    color: '#646cff',
+    textDecoration: 'none'
   },
   nav: {
     display: 'flex',
-    gap: '1rem',
+    gap: '1.5rem',
     alignItems: 'center'
   },
   link: {
-    color: 'white',
+    color: '#fff',
     textDecoration: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    backgroundColor: '#2a2a2a'
+    padding: '0.6rem 1.2rem',
+    borderRadius: '6px',
+    backgroundColor: '#2a2a2a',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: '#646cff',
+      transform: 'translateY(-2px)'
+    }
   }
 };
 

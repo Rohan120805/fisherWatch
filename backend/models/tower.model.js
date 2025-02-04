@@ -28,7 +28,7 @@ const PcapSchema = new mongoose.Schema({
 });
 
 const AnalysisReportSchema = new mongoose.Schema({
-  score: { type: Number, required: true },
+  score: { type: Number },
   fingerprints: { type: Map, of: FingerprintSchema, required: true },
   pcaps: { type: [PcapSchema], required: true },
   distance_in_meters: { type: Number }
@@ -37,7 +37,12 @@ const AnalysisReportSchema = new mongoose.Schema({
 const TowerSchema = new mongoose.Schema({
   kingfisher_id: { type: String, required: true },
   kingfisher_version: { type: String, required: true },
-  last_modified: { type: Date, required: true },
+  last_modified: { 
+    type: Date,
+    required: true,
+    get: v => v && v.toISOString(), // Optional: Format as ISO string when retrieving
+    set: v => v === '' ? null : new Date(v) // Convert incoming string to Date object
+  },
   kingfisher_id_changed: { type: Boolean, default: false },
   rat: { type: String, required: true },
   operator_str: { type: String, required: true },

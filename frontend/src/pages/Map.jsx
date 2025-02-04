@@ -5,72 +5,84 @@ import 'leaflet/dist/leaflet.css';
 
 const styles = {
   container: {
-    width: '100%',
-    height: '100vh',
+    position: 'fixed',
+    top: '64px',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    padding: '1rem',
     display: 'flex',
     flexDirection: 'row',
-    gap: '5px',
-    boxSizing: 'border-box',
-    alignItems: 'flex-end',
+    backgroundColor: '#121212'
   },
   filterContainer: {
-    alignSelf: 'flex-left',
-    width: '250px',
-    minWidth: '200px',
-    padding: '10px',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '1rem',
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start',
+    padding: '1rem',
+    width: '250px',
     backgroundColor: '#1a1a1a',
     borderRadius: '8px',
-    height: '88vh',
-    overflowY: 'auto',
+    marginLeft: 'auto'
   },
-  filterGroup: {
+  checkboxGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '5px'
+    gap: '0.5rem'
   },
   label: {
-    fontWeight: 'bold',
-    color: '#646cff',
-    marginBottom: '8px'
+    marginRight: '0.5rem',
+    color: '#646cff'
   },
-  checkboxLabel: {
-    display: 'flex',
-    alignItems: 'flex-left',
-    gap: '8px',
-    color: '#ffffff'
-  },
-  checkbox: {
-    margin: 0
+  mapWrapper: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '8px',
+    marginRight: '1rem'
   },
   searchInput: {
-    padding: '8px',
-    borderRadius: '4px',
-    border: '1px solid #646cff',
-    backgroundColor: '#2a2a2a',
-    color: '#ffffff',
     width: '100%',
-    boxSizing: 'border-box'
+    padding: '0.5rem',
+    marginBottom: '1rem',
+    backgroundColor: '#2a2a2a',
+    border: '1px solid #333',
+    borderRadius: '4px',
+    color: '#fff',
+    fontSize: '0.9rem'
   },
-  mapContainer: {
-    position: 'end',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    height: '720px',
-    width: '1750px',
-    alignSelf: 'flex-end'
+  loadingText: {
+    textAlign: 'center',
+    padding: '20px',
+    color: '#fff'
   },
-  errorMessage: {
+  errorText: {
     color: '#ff6b6b',
-    padding: '20px',
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: '20px'
   },
-  loadingMessage: {
-    color: '#ffffff',
-    padding: '20px',
-    textAlign: 'center'
+  popup: {
+    backgroundColor: '#1a1a1a',
+    color: '#fff',
+    padding: '1rem',
+    borderRadius: '4px'
+  },
+  popupTitle: {
+    color: '#646cff',
+    fontSize: '1.1rem',
+    marginBottom: '0.5rem',
+    borderBottom: '1px solid #333',
+    paddingBottom: '0.5rem'
+  },
+  popupRow: {
+    marginBottom: '0.5rem'
+  },
+  popupWarning: {
+    color: '#ff6b6b',
+    fontWeight: 'bold',
+    marginBottom: '0.5rem'
   }
 };
 
@@ -154,55 +166,16 @@ function Map() {
       ]
     : defaultCenter;
 
-  if (loading) return <div style={styles.loadingMessage}>Loading map data...</div>;
-  if (error) return <div style={styles.errorMessage}>Error: {error}</div>;
+  if (loading) return <div style={styles.loadingText}>Loading map data...</div>;
+  if (error) return <div style={styles.errorText}>Error: {error}</div>;
 
   return (
     <div style={styles.container}>
-      <div style={styles.filterContainer}>
-        <input
-          type="text"
-          placeholder="Search by CI number"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={styles.searchInput}
-        />
-        <div style={styles.filterGroup}>
-          <div style={styles.label}>Service Provider</div>
-          {operators.map(op => (
-            <label key={op} style={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                style={styles.checkbox}
-                checked={filters.operator.includes(op)}
-                onChange={() => handleFilterChange('operator', op)}
-              />
-              {op}
-            </label>
-          ))}
-        </div>
-
-        <div style={styles.filterGroup}>
-          <div style={styles.label}>Technology</div>
-          {technologies.map(tech => (
-            <label key={tech} style={styles.checkboxLabel}>
-              <input
-                type="checkbox"
-                style={styles.checkbox}
-                checked={filters.technology.includes(tech)}
-                onChange={() => handleFilterChange('technology', tech)}
-              />
-              {tech}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div style={styles.mapContainer}>
+      <div style={styles.mapWrapper}>
         <MapContainer 
           center={center} 
           zoom={5} 
-          style={styles.mapContainer}
+          style={{ width: '100%', height: '100%', borderRadius: '4px' }}
           scrollWheelZoom={true}
         >
           <TileLayer
@@ -220,25 +193,67 @@ function Map() {
                 icon={tower.kingfisher_id_changed ? warningIcon : normalIcon}
               >
                 <Popup>
-                  <div>
-                    <h3>Tower Details</h3>
+                  <div style={styles.popup}>
+                    <div style={styles.popupTitle}>Tower Details</div>
                     {tower.kingfisher_id_changed && (
-                      <p style={{color: 'red', fontWeight: 'bold'}}>
+                      <div style={styles.popupWarning}>
                         Warning: This tower has been detected by a different Kingfisher device.
-                      </p>
+                      </div>
                     )}
-                    <p>Operator: {tower.operator_str}</p>
-                    <p>Technology: {tower.rat}</p>
-                    <p>CI: {tower.ci}</p>
-                    <p>Frequency: {tower.freq}</p>
-                    <p>Signal Power: {tower.signal_power} dBm</p>
-                    <p>Signal Quality: {tower.signal_quality} dB</p>
+                    <div style={styles.popupRow}>Operator: {tower.operator_str}</div>
+                    <div style={styles.popupRow}>Technology: {tower.rat}</div>
+                    <div style={styles.popupRow}>CI: {tower.ci}</div>
+                    <div style={styles.popupRow}>Frequency: {tower.freq}</div>
+                    <div style={styles.popupRow}>Signal Power: {tower.signal_power} dBm</div>
+                    <div style={styles.popupRow}>Signal Quality: {tower.signal_quality} dB</div>
                   </div>
                 </Popup>
               </Marker>
             );
           })}
         </MapContainer>
+      </div>
+
+      <div style={styles.filterContainer}>
+        <input
+          type="text"
+          placeholder="Search by CI number"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={styles.searchInput}
+        />
+        
+        <div>
+          <label style={styles.label}>Service Provider:</label>
+          <div style={styles.checkboxGroup}>
+            {operators.map(op => (
+              <label key={op}>
+                <input 
+                  type="checkbox" 
+                  checked={filters.operator.includes(op)}
+                  onChange={() => handleFilterChange('operator', op)}
+                />
+                {op}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Technology:</label>
+          <div style={styles.checkboxGroup}>
+            {technologies.map(tech => (
+              <label key={tech}>
+                <input 
+                  type="checkbox" 
+                  checked={filters.technology.includes(tech)}
+                  onChange={() => handleFilterChange('technology', tech)}
+                />
+                {tech}
+              </label>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

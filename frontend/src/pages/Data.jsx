@@ -93,12 +93,12 @@ const styles = {
     gap: '1.5rem'
   },
   dialogTitle: {
-    color: '#646cff',
-    fontSize: '1.5rem',
-    marginBottom: '1.5rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1rem',
     borderBottom: '1px solid #333',
-    paddingBottom: '0.5rem',
-    position: 'relative'
+    marginBottom: '1rem'
   },
   dialogSection: {
     backgroundColor: '#2a2a2a',
@@ -121,15 +121,17 @@ const styles = {
     minWidth: '120px'
   },
   closeButton: {
-    position: 'absolute',
-    top: '1rem',
-    right: '1rem',
-    background: 'transparent',
-    border: '1px solid #646cff',
-    color: '#646cff',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    cursor: 'pointer'
+    background: 'none',
+    border: 'none',
+    color: '#ffffff80',
+    cursor: 'pointer',
+    fontSize: '1rem',
+    padding: '0.5rem',
+    marginTop: '-0.5rem',
+    transition: 'color 0.2s',
+    '&:hover': {
+      color: '#fff'
+    }
   }
 };
 
@@ -141,10 +143,16 @@ function TowerDetails({ tower, open, onClose }) {
       PaperProps={{ style: styles.dialog }}
     >
       <div style={styles.dialogContent}>
-        <div style={styles.dialogTitle}>
-          Tower Details
-          <button style={styles.closeButton} onClick={onClose}>Close</button>
-        </div>
+      <div style={styles.dialogTitle}>
+        <h2 style={{ margin: 0 }}>Tower Details</h2>
+        <button 
+          style={styles.closeButton}
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ✕
+        </button>
+      </div>
 
         {/* Basic Information Section */}
         <div style={styles.dialogSection}>
@@ -154,13 +162,35 @@ function TowerDetails({ tower, open, onClose }) {
             <span>{tower.operator_str}</span>
           </div>
           <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Operator (Short):</span>
+            <span>{tower.operator_short_str}</span>
+          </div>
+          <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Technology:</span>
             <span>{tower.rat}</span>
           </div>
           <div style={styles.dialogRow}>
-            <span style={styles.dialogLabel}>Last Update:</span>
-            <span>{new Date(tower.timestamp).toLocaleString()}</span>
+            <span style={styles.dialogLabel}>Created:</span>
+            <span>{tower.createdAt ? new Date(tower.createdAt).toLocaleString() : 'N/A'}</span>
           </div>
+          <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Last Modified:</span>
+            <span>{tower.last_modified ? new Date(tower.last_modified).toLocaleString() : 'N/A'}</span>
+          </div>
+          <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Kingfisher ID:</span>
+            <span>{tower.kingfisher_id}</span>
+          </div>
+          <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Kingfisher Version:</span>
+            <span>{tower.kingfisher_version}</span>
+          </div>
+          {tower.kingfisher_id_changed && (
+            <div style={{...styles.dialogRow, color: '#ff4444'}}>
+              <span style={styles.dialogLabel}>Warning:</span>
+              <span>This tower was detected by a different Kingfisher device</span>
+            </div>
+          )}
         </div>
 
         {/* Network Information Section */}
@@ -219,26 +249,65 @@ function TowerDetails({ tower, open, onClose }) {
                 <span>{tower.analysis_report.distance_in_meters} meters</span>
               </div>
             )}
-            {tower.analysis_report.pcaps && tower.analysis_report.pcaps[0]?.gnss_position && (
-              <div style={styles.dialogRow}>
-                <span style={styles.dialogLabel}>Location:</span>
-                <span>
-                  Lat: {tower.analysis_report.pcaps[0].gnss_position.latitude}, 
-                  Lon: {tower.analysis_report.pcaps[0].gnss_position.longitude}
-                </span>
+            {tower.analysis_report.pcaps?.map((pcap, index) => (
+              <div key={index}>
+                <div style={styles.dialogRow}>
+                  <span style={styles.dialogLabel}>PCAP {index + 1} Path:</span>
+                  <span>{pcap.path}</span>
+                </div>
+                {pcap.gnss_position && (
+                  <>
+                    <div style={styles.dialogRow}>
+                      <span style={styles.dialogLabel}>Location:</span>
+                      <span>
+                        Lat: {pcap.gnss_position.latitude}, 
+                        Lon: {pcap.gnss_position.longitude}
+                      </span>
+                    </div>
+                    {pcap.gnss_position.altitude && (
+                      <div style={styles.dialogRow}>
+                        <span style={styles.dialogLabel}>Altitude:</span>
+                        <span>{pcap.gnss_position.altitude}</span>
+                      </div>
+                    )}
+                    {pcap.gnss_position.utc && (
+                      <div style={styles.dialogRow}>
+                        <span style={styles.dialogLabel}>UTC:</span>
+                        <span>{pcap.gnss_position.utc}</span>
+                      </div>
+                    )}
+                    {pcap.gnss_position.hdop && (
+                      <div style={styles.dialogRow}>
+                        <span style={styles.dialogLabel}>HDOP:</span>
+                        <span>{pcap.gnss_position.hdop}</span>
+                      </div>
+                    )}
+                    {pcap.gnss_position.fix && (
+                      <div style={styles.dialogRow}>
+                        <span style={styles.dialogLabel}>Fix:</span>
+                        <span>{pcap.gnss_position.fix}</span>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
-            )}
+            ))}
           </div>
         )}
 
         {/* Fingerprints Section */}
-        {tower.fingerprints && Object.keys(tower.fingerprints).length > 0 && (
+        {tower.analysis_report?.fingerprints && tower.analysis_report.fingerprints.size > 0 && (
           <div style={styles.dialogSection}>
             <div style={styles.dialogSectionTitle}>Fingerprints</div>
-            {Object.entries(tower.fingerprints).map(([key, value]) => (
+            {Array.from(tower.analysis_report.fingerprints.entries()).map(([key, value]) => (
               <div key={key} style={styles.dialogRow}>
                 <span style={styles.dialogLabel}>{key}:</span>
-                <span>{JSON.stringify(value)}</span>
+                <span>
+                  Type: {value.type_}, 
+                  Triggered: {value.times_triggered}, 
+                  Certainty: {value.certainty}, 
+                  Description: {value.description}
+                </span>
               </div>
             ))}
           </div>
@@ -344,7 +413,12 @@ function Data() {
                 <td style={styles.td}>{tower.freq}</td>
                 <td style={styles.td}>{tower.signal_power} dBm</td>
                 <td style={styles.td}>{tower.signal_quality} dB</td>
-                <td style={styles.td}>{new Date(tower.timestamp).toLocaleString()}</td>
+                <td style={styles.td}>
+                  {tower.updatedAt
+                    ? new Date(tower.createdAt).toLocaleString() 
+                    : 'N/A'
+                  }
+                </td>
                 <td style={styles.td}>
                   <button 
                     style={styles.button}
