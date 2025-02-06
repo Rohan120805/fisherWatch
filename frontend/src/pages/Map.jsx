@@ -86,23 +86,47 @@ const styles = {
   }
 };
 
-const normalIcon = new Icon({
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
+const getIcon = (score, hasWarning) => {
+  if (hasWarning) {
+    return new Icon({
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34]
+    });
+  }
 
-const warningIcon = new Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  iconRetinaUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34]
-});
+  let color;
+  switch (true) {
+    case score === null:
+      color = 'blue';
+      break;
+    case score === 0:
+      color = 'green';
+      break;
+    case score === 100:
+      color = 'red';
+      break;
+    default:
+      color = 'orange';
+  }
+
+  return new Icon({
+    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34]
+  });
+};
+
+const scoreRanges = [
+  { label: 'Null', value: 'null' },
+  { label: '0', value: '0' },
+  { label: '1-99', value: 'middle' },
+  { label: '<99', value: '100' }
+];
 
 function Map() {
   const [towers, setTowers] = useState([]);
@@ -111,10 +135,11 @@ function Map() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     operator: [],
-    technology: []
+    technology: [],
+    score: []
   });
 
-  const operators = [...new Set(towers.map(tower => tower.operator_str))];
+  const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
 
   const fetchTowers = async () => {
@@ -151,10 +176,28 @@ function Map() {
     }));
   };
 
+  const isScoreInRange = (score, range) => {
+    switch (range) {
+      case 'null':
+        return score === null;
+      case '0':
+        return score === 0;
+      case 'middle':
+        return score > 0 && score < 100;
+      case '100':
+        return score === 100;
+      default:
+        return true;
+    }
+  };
+
   const filteredTowers = towers.filter(tower => {
     if (searchTerm && !tower.ci.toString().includes(searchTerm)) return false;
-    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_str)) return false;
+    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_short_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
+    if (filters.score.length > 0 && !filters.score.some(range => 
+      isScoreInRange(tower.analysis_report.score, range)
+    )) return false;
     return true;
   });
 
@@ -190,7 +233,7 @@ function Map() {
               <Marker 
                 key={`${tower.ci}-${tower.timestamp}`}
                 position={[position.latitude, position.longitude]}
-                icon={tower.kingfisher_id_changed ? warningIcon : normalIcon}
+                icon={getIcon(tower.analysis_report.score, tower.kingfisher_id_changed)}
               >
                 <Popup>
                   <div style={styles.popup}>
@@ -200,12 +243,11 @@ function Map() {
                         Warning: This tower has been detected by a different Kingfisher device.
                       </div>
                     )}
-                    <div style={styles.popupRow}>Operator: {tower.operator_str}</div>
-                    <div style={styles.popupRow}>Technology: {tower.rat}</div>
-                    <div style={styles.popupRow}>CI: {tower.ci}</div>
+                    <div style={styles.popupRow}>Operator: {tower.operator_short_str}</div>
+                    <div style={styles.popupRow}>RAT: {tower.rat}</div>
                     <div style={styles.popupRow}>Frequency: {tower.freq}</div>
-                    <div style={styles.popupRow}>Signal Power: {tower.signal_power} dBm</div>
-                    <div style={styles.popupRow}>Signal Quality: {tower.signal_quality} dB</div>
+                    <div style={styles.popupRow}>Distance: {tower.analysis_report.distance_in_meters}</div>
+                    <div style={styles.popupRow}>Score: {tower.analysis_report.score}</div>
                   </div>
                 </Popup>
               </Marker>
@@ -250,6 +292,22 @@ function Map() {
                   onChange={() => handleFilterChange('technology', tech)}
                 />
                 {tech}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Score Range:</label>
+          <div style={styles.checkboxGroup}>
+            {scoreRanges.map(range => (
+              <label key={range.value}>
+                <input 
+                  type="checkbox" 
+                  checked={filters.score.includes(range.value)}
+                  onChange={() => handleFilterChange('score', range.value)}
+                />
+                {range.label}
               </label>
             ))}
           </div>

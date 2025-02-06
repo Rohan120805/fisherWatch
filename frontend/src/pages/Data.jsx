@@ -159,7 +159,7 @@ function TowerDetails({ tower, open, onClose }) {
           <div style={styles.dialogSectionTitle}>Basic Information</div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Operator:</span>
-            <span>{tower.operator_str}</span>
+            <span>{tower.operator_short_str}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Operator (Short):</span>
@@ -324,12 +324,34 @@ function Data() {
   const [selectedTower, setSelectedTower] = useState(null);
   const [filters, setFilters] = useState({
     operator: [],
-    technology: []
+    technology: [],
+    score: []
   });
   const [updatedTowers, setUpdatedTowers] = useState(new Set());
 
-  const operators = [...new Set(towers.map(tower => tower.operator_str))];
+  const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
+  const scoreRanges=[
+    { label: 'Null', value: 'null' },
+    { label: '0', value: '0' },
+    { label: '1-99', value: 'middle' },
+    { label: '<99', value: '100' }
+  ]
+
+  const isScoreInRange = (score, range) => {
+    switch (range) {
+      case 'null':
+        return score === null;
+      case '0':
+        return score === 0;
+      case 'middle':
+        return score > 0 && score < 100;
+      case '100':
+        return score === 100;
+      default:
+        return true;
+    }
+  };
 
   const fetchTowers = async () => {
     try {
@@ -366,8 +388,11 @@ function Data() {
   };
 
   const filteredTowers = towers.filter(tower => {
-    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_str)) return false;
+    if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_short_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
+    if (filters.score.length > 0 && !filters.score.some(range => 
+      isScoreInRange(tower.analysis_report.score, range)
+    )) return false;
     return true;
   });
 
@@ -390,7 +415,7 @@ function Data() {
               <th style={styles.th}>Frequency</th>
               <th style={styles.th}>Signal Power</th>
               <th style={styles.th}>Signal Quality</th>
-              <th style={styles.th}>Last Update</th>
+              <th style={styles.th}>Last Modified</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
@@ -403,7 +428,7 @@ function Data() {
                   ...(updatedTowers.has(tower.ci) ? styles.updatedRow : {})
                 }}
               >
-                <td style={styles.td}>{tower.operator_str}</td>
+                <td style={styles.td}>{tower.operator_short_str}</td>
                 <td style={styles.td}>{tower.rat}</td>
                 <td style={styles.td}>{tower.mcc}</td>
                 <td style={styles.td}>{tower.mnc}</td>
@@ -415,7 +440,7 @@ function Data() {
                 <td style={styles.td}>{tower.signal_quality} dB</td>
                 <td style={styles.td}>
                   {tower.updatedAt
-                    ? new Date(tower.createdAt).toLocaleString() 
+                    ? new Date(tower.last_modified).toLocaleString() 
                     : 'N/A'
                   }
                 </td>
@@ -465,6 +490,22 @@ function Data() {
                   onChange={(e) => handleFilterChange('technology', e.target.value)}
                 />
                 {tech}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Score Range:</label>
+          <div style={styles.checkboxGroup}>
+            {scoreRanges.map(range => (
+              <label key={range.value}>
+                <input 
+                  type="checkbox" 
+                  checked={filters.score.includes(range.value)}
+                  onChange={() => handleFilterChange('score', range.value)}
+                />
+                {range.label}
               </label>
             ))}
           </div>
