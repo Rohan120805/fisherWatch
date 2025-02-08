@@ -132,6 +132,30 @@ const styles = {
     '&:hover': {
       color: '#fff'
     }
+  },
+  buttonGroup: {
+    display: 'flex',
+    gap: '0.5rem'
+  },
+  pcapContainer: {
+    borderLeft: '2px solid #646cff',
+    paddingLeft: '1rem',
+    marginBottom: '1rem'
+  },
+  fingerprintInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  pcapContainer: {
+    borderLeft: '2px solid #646cff',
+    paddingLeft: '1rem',
+    marginBottom: '1rem'
+  },
+  scoreColors: {
+    zero: 'rgba(40, 167, 69, 0.2)',   // green
+    middle: 'rgba(255, 102, 0, 0.2)',  // orange
+    high: 'rgba(255, 0, 25, 0.4)',    // red
   }
 };
 
@@ -143,16 +167,16 @@ function TowerDetails({ tower, open, onClose }) {
       PaperProps={{ style: styles.dialog }}
     >
       <div style={styles.dialogContent}>
-      <div style={styles.dialogTitle}>
-        <h2 style={{ margin: 0 }}>Tower Details</h2>
-        <button 
-          style={styles.closeButton}
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ✕
-        </button>
-      </div>
+        <div style={styles.dialogTitle}>
+          <h2 style={{ margin: 0 }}>Tower Details</h2>
+          <button 
+            style={styles.closeButton}
+            onClick={onClose}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         {/* Basic Information Section */}
         <div style={styles.dialogSection}>
@@ -166,7 +190,7 @@ function TowerDetails({ tower, open, onClose }) {
             <span>{tower.operator_short_str}</span>
           </div>
           <div style={styles.dialogRow}>
-            <span style={styles.dialogLabel}>Technology:</span>
+            <span style={styles.dialogLabel}>RAT:</span>
             <span>{tower.rat}</span>
           </div>
           <div style={styles.dialogRow}>
@@ -317,7 +341,147 @@ function TowerDetails({ tower, open, onClose }) {
   );
 }
 
+function AnalysisReportDialog({ tower, open, onClose }) {
+  if (!tower?.analysis_report) return null;
+  
+  return (
+    <Dialog 
+      open={open} 
+      onClose={onClose}
+      PaperProps={{ style: styles.dialog }}
+    >
+      <div style={styles.dialogContent}>
+        <div style={styles.dialogTitle}>
+          <h2 style={{ margin: 0 }}>Analysis Report</h2>
+          <button 
+            style={styles.closeButton}
+            onClick={onClose}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Analysis Results */}
+        <div style={styles.dialogSection}>
+          <div style={styles.dialogSectionTitle}>Analysis Results</div>
+          <div style={styles.dialogRow}>
+            <span style={styles.dialogLabel}>Score:</span>
+            <span>{tower.analysis_report.score || 'N/A'}</span>
+          </div>
+          {tower.analysis_report.distance_in_meters && (
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Distance:</span>
+              <span>{tower.analysis_report.distance_in_meters} meters</span>
+            </div>
+          )}
+        </div>
+
+        {/* GNSS Information */}
+        {tower.analysis_report.pcaps?.[0]?.gnss_position && (
+          <div style={styles.dialogSection}>
+            <div style={styles.dialogSectionTitle}>GNSS Position</div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Latitude:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.latitude}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Longitude:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.longitude}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Fix:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.fix || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>UTC:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.utc || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>HDOP:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.hdop || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Altitude:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.altitude || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Course over Ground:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.cog || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Speed (km/h):</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.spkm || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Speed (knots):</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.spkn || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Date:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.date || 'N/A'}</span>
+            </div>
+            <div style={styles.dialogRow}>
+              <span style={styles.dialogLabel}>Satellites:</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.nsat || 'N/A'}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Fingerprints Section */}
+        {tower.analysis_report.fingerprints && Object.keys(tower.analysis_report.fingerprints).length > 0 && (
+          <div style={styles.dialogSection}>
+            <div style={styles.dialogSectionTitle}>Fingerprints</div>
+            {Object.entries(tower.analysis_report.fingerprints).map(([key, value]) => (
+              <div key={key} style={styles.dialogRow}>
+                <span style={styles.dialogLabel}>{key}:</span>
+                <span style={styles.fingerprintInfo}>
+                  <div>Type: {value.type_}</div>
+                  <div>Triggered: {value.times_triggered}</div>
+                  <div>Certainty: {value.certainty}</div>
+                  <div>Description: {value.description}</div>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* PCAP Information */}
+        {tower.analysis_report.pcaps?.length > 0 && (
+          <div style={styles.dialogSection}>
+            <div style={styles.dialogSectionTitle}>PCAP Information</div>
+            {tower.analysis_report.pcaps.map((pcap, index) => (
+              <div key={index} style={styles.pcapContainer}>
+                <div style={styles.dialogRow}>
+                  <span style={styles.dialogLabel}>PCAP {index + 1} Path:</span>
+                  <span>{pcap.path}</span>
+                </div>
+                {pcap.gnss_position && (
+                  <>
+                    <div style={styles.dialogRow}>
+                      <span style={styles.dialogLabel}>Location:</span>
+                      <span>
+                        Lat: {pcap.gnss_position.latitude}, 
+                        Lon: {pcap.gnss_position.longitude}
+                      </span>
+                    </div>
+                    <div style={styles.dialogRow}>
+                      <span style={styles.dialogLabel}>Fix:</span>
+                      <span>{pcap.gnss_position.fix}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Dialog>
+  );
+}
+
 function Data() {
+  const [showAnalysisReport, setShowAnalysisReport] = useState(false);
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
   const [towers, setTowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -406,7 +570,7 @@ function Data() {
           <thead>
             <tr>
               <th style={styles.th}>Operator</th>
-              <th style={styles.th}>Technology</th>
+              <th style={styles.th}>RAT</th>
               <th style={styles.th}>MCC</th>
               <th style={styles.th}>MNC</th>
               <th style={styles.th}>TAC</th>
@@ -425,8 +589,15 @@ function Data() {
                 key={tower.ci}
                 style={{
                   ...styles.td,
-                  ...(updatedTowers.has(tower.ci) ? styles.updatedRow : {})
-                }}
+                  ...(updatedTowers.has(tower.ci) ? styles.updatedRow : {}),
+                  backgroundColor: tower.analysis_report?.score === null 
+                  ? styles.scoreColors.zero
+                  : tower.analysis_report?.score === 0
+                  ? styles.scoreColors.zero
+                  : tower.analysis_report?.score === 100
+                  ? styles.scoreColors.high
+                  : styles.scoreColors.middle
+              }}
               >
                 <td style={styles.td}>{tower.operator_short_str}</td>
                 <td style={styles.td}>{tower.rat}</td>
@@ -445,12 +616,24 @@ function Data() {
                   }
                 </td>
                 <td style={styles.td}>
-                  <button 
-                    style={styles.button}
-                    onClick={() => setSelectedTower(tower)}
-                  >
-                    Details
-                  </button>
+                  <div style={styles.buttonGroup}>
+                    <button 
+                      style={styles.button}
+                      onClick={() => setSelectedTower(tower)}
+                    >
+                      Details
+                    </button>
+                    <button 
+                      style={styles.button}
+                      onClick={() => {
+                        setSelectedAnalysis(tower);
+                        setShowAnalysisReport(true);
+                      }}
+                      disabled={!tower.analysis_report}
+                    >
+                      Analysis
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -478,7 +661,7 @@ function Data() {
         </div>
 
         <div>
-          <label style={styles.label}>Technology:</label>
+          <label style={styles.label}>RAT:</label>
           <div style={styles.checkboxGroup}>
             {technologies.map(tech => (
               <label key={tech}>
@@ -517,6 +700,16 @@ function Data() {
           tower={selectedTower}
           open={!!selectedTower}
           onClose={() => setSelectedTower(null)}
+        />
+      )}
+      {selectedAnalysis && (
+        <AnalysisReportDialog
+          tower={selectedAnalysis}
+          open={showAnalysisReport}
+          onClose={() => {
+            setShowAnalysisReport(false);
+            setSelectedAnalysis(null);
+          }}
         />
       )}
     </div>
