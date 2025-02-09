@@ -282,7 +282,7 @@ function Map() {
         </div>
 
         <div>
-          <label style={styles.label}>Technology:</label>
+          <label style={styles.label}>RAT:</label>
           <div style={styles.checkboxGroup}>
             {technologies.map(tech => (
               <label key={tech}>

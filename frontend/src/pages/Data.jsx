@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Dialog } from '@mui/material';
-import api from '../config/api.config.js';
 
 const styles = {
   container: {
@@ -13,6 +12,16 @@ const styles = {
     display: 'flex',
     flexDirection: 'row',
     backgroundColor: '#121212'
+  },
+  searchInput: {
+    width: '100%',
+    padding: '0.5rem',
+    marginBottom: '1rem',
+    backgroundColor: '#2a2a2a',
+    border: '1px solid #333',
+    borderRadius: '4px',
+    color: '#fff',
+    fontSize: '0.9rem'
   },
   filterContainer: {
     display: 'flex',
@@ -153,9 +162,9 @@ const styles = {
     marginBottom: '1rem'
   },
   scoreColors: {
-    zero: 'rgba(40, 167, 69, 0.2)',   // green
-    middle: 'rgba(255, 102, 0, 0.2)',  // orange
-    high: 'rgba(255, 0, 25, 0.4)',    // red
+    zero: 'rgba(40, 167, 69, 0.3)',   // green
+    middle: 'rgba(255, 85, 0, 0.3)',  // orange
+    high: 'rgba(255, 0, 25, 0.3)',    // red
   }
 };
 
@@ -485,6 +494,7 @@ function Data() {
   const [towers, setTowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedTower, setSelectedTower] = useState(null);
   const [filters, setFilters] = useState({
     operator: [],
@@ -552,6 +562,7 @@ function Data() {
   };
 
   const filteredTowers = towers.filter(tower => {
+    if (searchTerm && !tower.ci.toString().includes(searchTerm)) return false;
     if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_short_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     if (filters.score.length > 0 && !filters.score.some(range => 
@@ -642,6 +653,14 @@ function Data() {
       </div>
 
       <div style={styles.filterContainer}>
+        <input
+            type="text"
+            placeholder="Search by CI number"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchInput}
+        />
+
         <div>
           <label style={styles.label}>Service Provider:</label>
           <div style={styles.checkboxGroup}>
