@@ -16,7 +16,7 @@ export default defineConfig({
       cert: fs.readFileSync(path.join(__dirname, process.env.VITE_CLIENT_CERT_PATH)),
       ca: fs.readFileSync(path.join(__dirname, process.env.VITE_CA_CERT_PATH))
     },
-    port: 5173,
+    port: process.env.VITE_PORT,
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL,

@@ -208,7 +208,7 @@ function TowerDetails({ tower, open, onClose }) {
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Last Modified:</span>
-            <span>{tower.last_modified ? new Date(tower.last_modified).toLocaleString() : 'N/A'}</span>
+            <span>{tower.last_modified ? getRelativeTime(tower.last_modified) : 'N/A' }</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Kingfisher ID:</span>
@@ -267,66 +267,6 @@ function TowerDetails({ tower, open, onClose }) {
             <span>{tower.signal_quality} dB</span>
           </div>
         </div>
-
-        {/* Analysis Report Section */}
-        {tower.analysis_report && (
-          <div style={styles.dialogSection}>
-            <div style={styles.dialogSectionTitle}>Analysis Report</div>
-            <div style={styles.dialogRow}>
-              <span style={styles.dialogLabel}>Score:</span>
-              <span>{tower.analysis_report.score}</span>
-            </div>
-            {tower.analysis_report.distance_in_meters && (
-              <div style={styles.dialogRow}>
-                <span style={styles.dialogLabel}>Distance:</span>
-                <span>{tower.analysis_report.distance_in_meters} meters</span>
-              </div>
-            )}
-            {tower.analysis_report.pcaps?.map((pcap, index) => (
-              <div key={index}>
-                <div style={styles.dialogRow}>
-                  <span style={styles.dialogLabel}>PCAP {index + 1} Path:</span>
-                  <span>{pcap.path}</span>
-                </div>
-                {pcap.gnss_position && (
-                  <>
-                    <div style={styles.dialogRow}>
-                      <span style={styles.dialogLabel}>Location:</span>
-                      <span>
-                        Lat: {pcap.gnss_position.latitude}, 
-                        Lon: {pcap.gnss_position.longitude}
-                      </span>
-                    </div>
-                    {pcap.gnss_position.altitude && (
-                      <div style={styles.dialogRow}>
-                        <span style={styles.dialogLabel}>Altitude:</span>
-                        <span>{pcap.gnss_position.altitude}</span>
-                      </div>
-                    )}
-                    {pcap.gnss_position.utc && (
-                      <div style={styles.dialogRow}>
-                        <span style={styles.dialogLabel}>UTC:</span>
-                        <span>{pcap.gnss_position.utc}</span>
-                      </div>
-                    )}
-                    {pcap.gnss_position.hdop && (
-                      <div style={styles.dialogRow}>
-                        <span style={styles.dialogLabel}>HDOP:</span>
-                        <span>{pcap.gnss_position.hdop}</span>
-                      </div>
-                    )}
-                    {pcap.gnss_position.fix && (
-                      <div style={styles.dialogRow}>
-                        <span style={styles.dialogLabel}>Fix:</span>
-                        <span>{pcap.gnss_position.fix}</span>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
 
         {/* Fingerprints Section */}
         {tower.analysis_report?.fingerprints && tower.analysis_report.fingerprints.size > 0 && (
@@ -488,6 +428,31 @@ function AnalysisReportDialog({ tower, open, onClose }) {
   );
 }
 
+function getRelativeTime(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diff = now - date;
+
+  // Convert milliseconds to different units
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(days / 365);
+
+  if (minutes < 60) {
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (hours < 24) {
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  } else if (days < 30) {
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  } else if (months < 12) {
+    return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+  } else {
+    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+  }
+}
+
 function Data() {
   const [showAnalysisReport, setShowAnalysisReport] = useState(false);
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
@@ -499,7 +464,8 @@ function Data() {
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
-    score: []
+    score: [],
+    timeRange: [],
   });
   const [updatedTowers, setUpdatedTowers] = useState(new Set());
 
@@ -511,6 +477,38 @@ function Data() {
     { label: '1-99', value: 'middle' },
     { label: '<99', value: '100' }
   ]
+  const timeRanges = [
+    { label: '< 1 hour', value: '1h' },
+    { label: '< 3 hours', value: '3h' },
+    { label: '< 6 hours', value: '6h' },
+    { label: '< 12 hours', value: '12h' },
+    { label: '< 24 hours', value: '24h' },
+    { label: '> 24 hours', value: 'older' }
+  ];
+
+  const isInTimeRange = (lastModified, range) => {
+    if (!lastModified) return false;
+    const date = new Date(lastModified);
+    const now = new Date();
+    const hoursDiff = (now - date) / (1000 * 60 * 60);
+  
+    switch (range) {
+      case '1h':
+        return hoursDiff < 1;
+      case '3h':
+        return hoursDiff < 3;
+      case '6h':
+        return hoursDiff < 6;
+      case '12h':
+        return hoursDiff < 12;
+      case '24h':
+        return hoursDiff < 24;
+      case 'older':
+        return hoursDiff >= 24;
+      default:
+        return true;
+    }
+  };
 
   const isScoreInRange = (score, range) => {
     switch (range) {
@@ -566,7 +564,10 @@ function Data() {
     if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_short_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     if (filters.score.length > 0 && !filters.score.some(range => 
-      isScoreInRange(tower.analysis_report.score, range)
+      isScoreInRange(tower.analysis_report?.score, range)
+    )) return false;
+    if (filters.timeRange.length > 0 && !filters.timeRange.some(range =>
+      isInTimeRange(tower.last_modified, range)
     )) return false;
     return true;
   });
@@ -621,8 +622,8 @@ function Data() {
                 <td style={styles.td}>{tower.signal_power} dBm</td>
                 <td style={styles.td}>{tower.signal_quality} dB</td>
                 <td style={styles.td}>
-                  {tower.updatedAt
-                    ? new Date(tower.last_modified).toLocaleString() 
+                  {tower.last_modified 
+                    ? getRelativeTime(tower.last_modified)
                     : 'N/A'
                   }
                 </td>
@@ -706,6 +707,22 @@ function Data() {
                   type="checkbox" 
                   checked={filters.score.includes(range.value)}
                   onChange={() => handleFilterChange('score', range.value)}
+                />
+                {range.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Last Modified:</label>
+          <div style={styles.checkboxGroup}>
+            {timeRanges.map(range => (
+              <label key={range.value}>
+                <input 
+                  type="checkbox"
+                  checked={filters.timeRange.includes(range.value)}
+                  onChange={() => handleFilterChange('timeRange', range.value)}
                 />
                 {range.label}
               </label>

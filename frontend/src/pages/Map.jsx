@@ -136,11 +136,43 @@ function Map() {
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
-    score: []
+    score: [],
+    timeRange: []
   });
-
+  const timeRanges = [
+    { label: '< 1 hour', value: '1h' },
+    { label: '< 3 hours', value: '3h' },
+    { label: '< 6 hours', value: '6h' },
+    { label: '< 12 hours', value: '12h' },
+    { label: '< 24 hours', value: '24h' },
+    { label: '> 24 hours', value: 'older' }
+  ];
   const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
+
+  const isInTimeRange = (lastModified, range) => {
+    if (!lastModified) return false;
+    const date = new Date(lastModified);
+    const now = new Date();
+    const hoursDiff = (now - date) / (1000 * 60 * 60);
+  
+    switch (range) {
+      case '1h':
+        return hoursDiff < 1;
+      case '3h':
+        return hoursDiff < 3;
+      case '6h':
+        return hoursDiff < 6;
+      case '12h':
+        return hoursDiff < 12;
+      case '24h':
+        return hoursDiff < 24;
+      case 'older':
+        return hoursDiff >= 24;
+      default:
+        return true;
+    }
+  };
 
   const fetchTowers = async () => {
     try {
@@ -196,7 +228,10 @@ function Map() {
     if (filters.operator.length > 0 && !filters.operator.includes(tower.operator_short_str)) return false;
     if (filters.technology.length > 0 && !filters.technology.includes(tower.rat)) return false;
     if (filters.score.length > 0 && !filters.score.some(range => 
-      isScoreInRange(tower.analysis_report.score, range)
+      isScoreInRange(tower.analysis_report?.score, range)
+    )) return false;
+    if (filters.timeRange.length > 0 && !filters.timeRange.some(range =>
+      isInTimeRange(tower.last_modified, range)
     )) return false;
     return true;
   });
@@ -306,6 +341,22 @@ function Map() {
                   type="checkbox" 
                   checked={filters.score.includes(range.value)}
                   onChange={() => handleFilterChange('score', range.value)}
+                />
+                {range.label}
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label style={styles.label}>Last Modified:</label>
+          <div style={styles.checkboxGroup}>
+            {timeRanges.map(range => (
+              <label key={range.value}>
+                <input 
+                  type="checkbox"
+                  checked={filters.timeRange.includes(range.value)}
+                  onChange={() => handleFilterChange('timeRange', range.value)}
                 />
                 {range.label}
               </label>

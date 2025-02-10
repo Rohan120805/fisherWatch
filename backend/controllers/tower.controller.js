@@ -11,8 +11,8 @@ export const addOrUpdateTowers = async (req, res) => {
 
   try {
     const results = await Promise.all(towersData.map(async (towerData) => {
-      const { ci, pci, mnc } = towerData;
-      let tower = await Tower.findOne({ ci, pci, mnc });
+      const { ci, pci, mnc, mcc, tac } = towerData;
+      let tower = await Tower.findOne({ ci, pci, mnc, mcc, tac });
   
       if (tower) {
         const kingfisher_id_changed = tower.kingfisher_id !== data.kingfisher_id;

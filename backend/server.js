@@ -18,7 +18,7 @@ const app = express();
 
 // CORS configuration with security headers
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: [process.env.CLIENT],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: [
@@ -56,10 +56,8 @@ const options = {
   rejectUnauthorized: true
 };
 
-const PORT = process.env.PORT || 5000;
-
-https.createServer(options, app).listen(PORT, () => {
-  console.log(`Server running on https://localhost:${PORT}`);
+https.createServer(options, app).listen(process.env.PORT, () => {
+  console.log(`Server running on ${process.env.SERVER}`);
 }).on('error', (err) => {
   console.error('Server error:', err);
 });
