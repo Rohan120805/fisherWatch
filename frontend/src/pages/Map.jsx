@@ -282,7 +282,7 @@ function Map() {
                     <div style={styles.popupRow}>RAT: {tower.rat}</div>
                     <div style={styles.popupRow}>Frequency: {tower.freq}</div>
                     <div style={styles.popupRow}>Distance: {tower.analysis_report.distance_in_meters}</div>
-                    <div style={styles.popupRow}>Score: {tower.analysis_report.score}</div>
+                    <div style={styles.popupRow}>Score: {tower.analysis_report.score || 'Null'}</div>
                   </div>
                 </Popup>
               </Marker>

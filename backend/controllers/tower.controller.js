@@ -1,46 +1,45 @@
 import Tower from '../models/tower.model.js';
 
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
 export const addOrUpdateTowers = async (req, res) => {
   const data = req.body;
-
   if (!data || !Array.isArray(data.data)) {
     return res.status(400).json({ message: 'Data should be an array of tower objects' });
   }
 
-  const towersData = data.data;
-
   try {
-    const results = await Promise.all(towersData.map(async (towerData) => {
-      const { ci, pci, mnc, mcc, tac } = towerData;
-      let tower = await Tower.findOne({ ci, pci, mnc, mcc, tac });
-  
-      if (tower) {
-        const kingfisher_id_changed = tower.kingfisher_id !== data.kingfisher_id;
+    const results = await Promise.all(data.data.map(async (towerData) => {
+      const { ci, pci, mnc, mcc, tac, lac } = towerData;
+      let tower = await Tower.findOne({ ci, pci, mnc, mcc, tac, lac });
 
-        tower = await Tower.findOneAndUpdate(
-          { ci, pci, mnc },
+      if (tower) {
+        return Tower.findOneAndUpdate(
+          { ci, pci, mnc }, 
           {
             ...towerData,
             kingfisher_id: data.kingfisher_id,
             kingfisher_version: data.kingfisher_version,
             last_modified: data.last_modified,
-            kingfisher_id_changed
+            kingfisher_id_changed: tower.kingfisher_id !== data.kingfisher_id
           },
           { new: true }
         );
       } else {
         tower = new Tower({
           ...towerData,
-          kingfisher_id: data.kingfisher_id,
+          kingfisher_id: data.kingfisher_id, 
           kingfisher_version: data.kingfisher_version,
           last_modified: data.last_modified
         });
-        await tower.save();
+        return tower.save();
       }
-      return tower;
     }));
 
     res.status(200).json(results);
+
   } catch (error) {
     if (error.name === 'ValidationError') {
       const errors = Object.values(error.errors).map(err => err.message);
@@ -51,6 +50,10 @@ export const addOrUpdateTowers = async (req, res) => {
   }
 };
 
+/**
+ * @param {Request} req
+ * @param {Response} res
+ */
 export const getTowers = async (req, res) => {
   try {
     const towers = await Tower.find({});

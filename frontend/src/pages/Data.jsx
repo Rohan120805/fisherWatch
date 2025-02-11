@@ -46,22 +46,31 @@ const styles = {
   },
   tableWrapper: {
     flex: 1,
-    overflow: 'auto'
+    overflow: 'auto',
+    position: 'relative',
+    maxHeight: 'calc(100vh - 96px)',
+    borderRadius: '8px',
+    backgroundColor: '#1a1a1a'
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
     backgroundColor: '#1a1a1a',
-    borderRadius: '8px',
-    overflow: 'hidden'
+    borderSpacing: 0
   },
   th: {
     backgroundColor: '#2a2a2a',
     padding: '12px',
-    textAlign: 'left',
-    borderBottom: '1px solid #333'
+    textAlign: 'center',
+    borderBottom: '1px solid #333',
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    whiteSpace: 'nowrap',
+    boxShadow: '0 2px 2px -1px rgba(0, 0, 0, 0.4)'
   },
   td: {
+    textAlign: 'center',
     padding: '12px',
     borderBottom: '1px solid #333',
     transition: 'background-color 0.3s ease'
@@ -156,11 +165,6 @@ const styles = {
     flexDirection: 'column',
     gap: '0.25rem'
   },
-  pcapContainer: {
-    borderLeft: '2px solid #646cff',
-    paddingLeft: '1rem',
-    marginBottom: '1rem'
-  },
   scoreColors: {
     zero: 'rgba(40, 167, 69, 0.3)',   // green
     middle: 'rgba(255, 85, 0, 0.3)',  // orange
@@ -192,15 +196,15 @@ function TowerDetails({ tower, open, onClose }) {
           <div style={styles.dialogSectionTitle}>Basic Information</div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Operator:</span>
-            <span>{tower.operator_short_str}</span>
+            <span>{tower.operator_short_str || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Operator (Short):</span>
-            <span>{tower.operator_short_str}</span>
+            <span>{tower.operator_short_str || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>RAT:</span>
-            <span>{tower.rat}</span>
+            <span>{tower.rat || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Created:</span>
@@ -212,11 +216,11 @@ function TowerDetails({ tower, open, onClose }) {
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Kingfisher ID:</span>
-            <span>{tower.kingfisher_id}</span>
+            <span>{tower.kingfisher_id || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Kingfisher Version:</span>
-            <span>{tower.kingfisher_version}</span>
+            <span>{tower.kingfisher_version || 'N/A'}</span>
           </div>
           {tower.kingfisher_id_changed && (
             <div style={{...styles.dialogRow, color: '#ff4444'}}>
@@ -231,27 +235,27 @@ function TowerDetails({ tower, open, onClose }) {
           <div style={styles.dialogSectionTitle}>Network Information</div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>MCC:</span>
-            <span>{tower.mcc}</span>
+            <span>{tower.mcc || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>MNC:</span>
-            <span>{tower.mnc}</span>
+            <span>{tower.mnc || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>TAC:</span>
-            <span>{tower.tac}</span>
+            <span>{tower.tac || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>CI:</span>
-            <span>{tower.ci}</span>
+            <span>{tower.ci || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>PCI:</span>
-            <span>{tower.pci}</span>
+            <span>{tower.pci || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Frequency:</span>
-            <span>{tower.freq}</span>
+            <span>{tower.freq || 'N/A'}</span>
           </div>
         </div>
 
@@ -260,11 +264,11 @@ function TowerDetails({ tower, open, onClose }) {
           <div style={styles.dialogSectionTitle}>Signal Information</div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Signal Power:</span>
-            <span>{tower.signal_power} dBm</span>
+            <span>{tower.signal_power+' dBm' || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Signal Quality:</span>
-            <span>{tower.signal_quality} dB</span>
+            <span>{tower.signal_quality+' dB' || 'N/A'}</span>
           </div>
         </div>
 
@@ -276,10 +280,10 @@ function TowerDetails({ tower, open, onClose }) {
               <div key={key} style={styles.dialogRow}>
                 <span style={styles.dialogLabel}>{key}:</span>
                 <span>
-                  Type: {value.type_}, 
-                  Triggered: {value.times_triggered}, 
-                  Certainty: {value.certainty}, 
-                  Description: {value.description}
+                  Type: {value.type_ || 'N/A'}, 
+                  Triggered: {value.times_triggered || 'N/A'}, 
+                  Certainty: {value.certainty || 'N/A'}, 
+                  Description: {value.description || 'N/A'}
                 </span>
               </div>
             ))}
@@ -320,7 +324,7 @@ function AnalysisReportDialog({ tower, open, onClose }) {
           {tower.analysis_report.distance_in_meters && (
             <div style={styles.dialogRow}>
               <span style={styles.dialogLabel}>Distance:</span>
-              <span>{tower.analysis_report.distance_in_meters} meters</span>
+              <span>{tower.analysis_report.distance_in_meters || 'N/A'} meters</span>
             </div>
           )}
         </div>
@@ -331,11 +335,11 @@ function AnalysisReportDialog({ tower, open, onClose }) {
             <div style={styles.dialogSectionTitle}>GNSS Position</div>
             <div style={styles.dialogRow}>
               <span style={styles.dialogLabel}>Latitude:</span>
-              <span>{tower.analysis_report.pcaps[0].gnss_position.latitude}</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.latitude || 'N/A'}</span>
             </div>
             <div style={styles.dialogRow}>
               <span style={styles.dialogLabel}>Longitude:</span>
-              <span>{tower.analysis_report.pcaps[0].gnss_position.longitude}</span>
+              <span>{tower.analysis_report.pcaps[0].gnss_position.longitude || 'N/A'}</span>
             </div>
             <div style={styles.dialogRow}>
               <span style={styles.dialogLabel}>Fix:</span>
@@ -384,10 +388,10 @@ function AnalysisReportDialog({ tower, open, onClose }) {
               <div key={key} style={styles.dialogRow}>
                 <span style={styles.dialogLabel}>{key}:</span>
                 <span style={styles.fingerprintInfo}>
-                  <div>Type: {value.type_}</div>
-                  <div>Triggered: {value.times_triggered}</div>
-                  <div>Certainty: {value.certainty}</div>
-                  <div>Description: {value.description}</div>
+                  <div>Type: {value.type_ || 'N/A'}</div>
+                  <div>Triggered: {value.times_triggered || 'N/A'}</div>
+                  <div>Certainty: {value.certainty || 'N/A'}</div>
+                  <div>Description: {value.description || 'N/A'}</div>
                 </span>
               </div>
             ))}
@@ -402,20 +406,20 @@ function AnalysisReportDialog({ tower, open, onClose }) {
               <div key={index} style={styles.pcapContainer}>
                 <div style={styles.dialogRow}>
                   <span style={styles.dialogLabel}>PCAP {index + 1} Path:</span>
-                  <span>{pcap.path}</span>
+                  <span>{pcap.path || 'N/A'}</span>
                 </div>
                 {pcap.gnss_position && (
                   <>
                     <div style={styles.dialogRow}>
                       <span style={styles.dialogLabel}>Location:</span>
                       <span>
-                        Lat: {pcap.gnss_position.latitude}, 
-                        Lon: {pcap.gnss_position.longitude}
+                        Lat: {pcap.gnss_position.latitude || 'N/A'}, 
+                        Lon: {pcap.gnss_position.longitude || 'N/A'}
                       </span>
                     </div>
                     <div style={styles.dialogRow}>
                       <span style={styles.dialogLabel}>Fix:</span>
-                      <span>{pcap.gnss_position.fix}</span>
+                      <span>{pcap.gnss_position.fix || 'N/A'}</span>
                     </div>
                   </>
                 )}
@@ -475,7 +479,7 @@ function Data() {
     { label: 'Null', value: 'null' },
     { label: '0', value: '0' },
     { label: '1-99', value: 'middle' },
-    { label: '<99', value: '100' }
+    { label: '>99', value: '100' }
   ]
   const timeRanges = [
     { label: '< 1 hour', value: '1h' },
@@ -519,7 +523,7 @@ function Data() {
       case 'middle':
         return score > 0 && score < 100;
       case '100':
-        return score === 100;
+        return score >= 100;
       default:
         return true;
     }
@@ -585,7 +589,7 @@ function Data() {
               <th style={styles.th}>RAT</th>
               <th style={styles.th}>MCC</th>
               <th style={styles.th}>MNC</th>
-              <th style={styles.th}>TAC</th>
+              <th style={styles.th}>TAC/LAC</th>
               <th style={styles.th}>CI</th>
               <th style={styles.th}>PCI</th>
               <th style={styles.th}>Frequency</th>
@@ -611,20 +615,20 @@ function Data() {
                   : styles.scoreColors.middle
               }}
               >
-                <td style={styles.td}>{tower.operator_short_str}</td>
-                <td style={styles.td}>{tower.rat}</td>
-                <td style={styles.td}>{tower.mcc}</td>
-                <td style={styles.td}>{tower.mnc}</td>
-                <td style={styles.td}>{tower.tac}</td>
-                <td style={styles.td}>{tower.ci}</td>
-                <td style={styles.td}>{tower.pci}</td>
-                <td style={styles.td}>{tower.freq}</td>
-                <td style={styles.td}>{tower.signal_power} dBm</td>
-                <td style={styles.td}>{tower.signal_quality} dB</td>
+                <td style={styles.td}>{tower.operator_short_str || 'Null'}</td>
+                <td style={styles.td}>{tower.rat || 'Null'}</td>
+                <td style={styles.td}>{tower.mcc || 'Null'}</td>
+                <td style={styles.td}>{tower.mnc || 'Null'}</td>
+                <td style={styles.td}>{tower.tac || tower.lac || 'Null'}</td>
+                <td style={styles.td}>{tower.ci || 'Null'}</td>
+                <td style={styles.td}>{tower.pci || 'N/A'}</td>
+                <td style={styles.td}>{tower.freq || 'Null'}</td>
+                <td style={styles.td}>{tower.signal_power || 'Null'}</td>
+                <td style={styles.td}>{tower.signal_quality || 'Null'}</td>
                 <td style={styles.td}>
                   {tower.last_modified 
                     ? getRelativeTime(tower.last_modified)
-                    : 'N/A'
+                    : getRelativeTime(tower.updatedAt)
                   }
                 </td>
                 <td style={styles.td}>
