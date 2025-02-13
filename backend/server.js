@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import towerRoutes from './routes/tower.routes.js';
+import authRoutes from './routes/auth.routes.js';
 import { clerkMiddleware } from '@clerk/express';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -39,13 +40,13 @@ app.use((req, res, next) => {
 
 // Regular middleware
 app.use(express.json());
-app.use(clerkMiddleware());
 
 // Connect to MongoDB
 connectDB();
 
 // API routes
 app.use('/api', towerRoutes);
+app.use('/auth', authRoutes);
 
 // Load certificates and keys
 const options = {

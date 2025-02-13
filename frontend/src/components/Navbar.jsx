@@ -48,6 +48,7 @@ function Navbar() {
       <div style={styles.nav}>
         <Link to="/data" style={styles.link}>Data</Link>
         <Link to="/map" style={styles.link}>Map</Link>
+        {/* <button onClick={onLogout}>Logout</button> */}
         <UserButton />
       </div>
     </nav>

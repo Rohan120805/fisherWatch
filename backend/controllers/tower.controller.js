@@ -1,4 +1,6 @@
 import Tower from '../models/tower.model.js';
+import fs from 'fs/promises';
+import path from 'path';
 
 /**
  * @param {Request} req
@@ -11,6 +13,22 @@ export const addOrUpdateTowers = async (req, res) => {
   }
 
   try {
+    const timestamp = new Date(data.last_modified).toISOString()
+      .replace(/[:.]/g, '-')
+      .replace('T', '_')
+      .replace('Z', '');
+      
+    // Create filename
+    const filename = `${data.kingfisher_id}_${timestamp}.json`;
+    const savePath = path.join('data', filename);
+
+    // Ensure directory exists
+    await fs.mkdir(path.dirname(savePath), { recursive: true });
+
+    // Save raw data to file
+    await fs.writeFile(savePath, JSON.stringify(data, null, 2));
+
+    
     const results = await Promise.all(data.data.map(async (towerData) => {
       const { ci, pci, mnc, mcc, tac, lac } = towerData;
       let tower = await Tower.findOne({ ci, pci, mnc, mcc, tac, lac });

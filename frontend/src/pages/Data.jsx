@@ -211,7 +211,7 @@ function TowerDetails({ tower, open, onClose }) {
             <span>{tower.createdAt ? new Date(tower.createdAt).toLocaleString() : 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
-            <span style={styles.dialogLabel}>Last Modified:</span>
+            <span style={styles.dialogLabel}>Last Updated:</span>
             <span>{tower.last_modified ? getRelativeTime(tower.last_modified) : 'N/A' }</span>
           </div>
           <div style={styles.dialogRow}>
@@ -476,18 +476,17 @@ function Data() {
   const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
   const scoreRanges=[
-    { label: 'Null', value: 'null' },
-    { label: '0', value: '0' },
-    { label: '1-99', value: 'middle' },
-    { label: '>99', value: '100' }
+    { label: 'N/A', value: 'null' },
+    { label: 'Trusted', value: '0' },
+    { label: 'Undecided', value: 'middle' },
+    { label: 'Rogue', value: '100' }
   ]
   const timeRanges = [
-    { label: '< 1 hour', value: '1h' },
-    { label: '< 3 hours', value: '3h' },
-    { label: '< 6 hours', value: '6h' },
-    { label: '< 12 hours', value: '12h' },
-    { label: '< 24 hours', value: '24h' },
-    { label: '> 24 hours', value: 'older' }
+    { label: '1 hour ago', value: '1h' },
+    { label: '3 hours ago', value: '3h' },
+    { label: '12 hours ago', value: '12h' },
+    { label: '24 hours ago', value: '24h' },
+    { label: 'More than 24 hours', value: 'older' }
   ];
 
   const isInTimeRange = (lastModified, range) => {
@@ -595,7 +594,7 @@ function Data() {
               <th style={styles.th}>Frequency</th>
               <th style={styles.th}>Signal Power</th>
               <th style={styles.th}>Signal Quality</th>
-              <th style={styles.th}>Last Modified</th>
+              <th style={styles.th}>Last Updated</th>
               <th style={styles.th}>Actions</th>
             </tr>
           </thead>
@@ -685,7 +684,7 @@ function Data() {
         </div>
 
         <div>
-          <label style={styles.label}>RAT:</label>
+          <label style={styles.label}>Network Generation:</label>
           <div style={styles.checkboxGroup}>
             {technologies.map(tech => (
               <label key={tech}>
@@ -703,7 +702,7 @@ function Data() {
         </div>
 
         <div>
-          <label style={styles.label}>Score Range:</label>
+          <label style={styles.label}>Tower Listed As:</label>
           <div style={styles.checkboxGroup}>
             {scoreRanges.map(range => (
               <label key={range.value}>
@@ -719,7 +718,7 @@ function Data() {
         </div>
 
         <div>
-          <label style={styles.label}>Last Modified:</label>
+          <label style={styles.label}>Last Updated:</label>
           <div style={styles.checkboxGroup}>
             {timeRanges.map(range => (
               <label key={range.value}>

@@ -1,0 +1,286 @@
+{
+  "kingfisher_id": "d531f165-d817-471f-b8c0-d9bfe0e0650d",
+  "kingfisher_version": "1.0.0",
+  "last_modified": "2025-02-13 14:33:40",
+  "data": [
+    {
+      "rat": "2G",
+      "operator_str": "Telekom Deutschland GmbH",
+      "operator_short_str": "Telekom",
+      "mnc": "01",
+      "mcc": "262",
+      "analysis_report": {
+        "score": 0,
+        "fingerprints": {
+          "Denial of Service": {
+            "id_": "Denial of service",
+            "type_": "Denial of Service",
+            "times_triggered": 3,
+            "certainty": 0,
+            "description": "Perform attack with location area updating reject to fully or partially deny service."
+          }
+        },
+        "pcaps": [
+          {
+            "path": "/opt/kingfisher/src/result/891c3154-d360-11ef-be6c-2ccf679a55e1.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.51209573861436",
+              "longitude": "13.29756981790085",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          }
+        ],
+        "distance_in_meters": 550
+      },
+      "lac": "5127",
+      "freq": "71",
+      "ci": "64583",
+      "rx_level": "-52",
+      "is_gprs_support": null
+    },
+    {
+      "rat": "2G",
+      "operator_str": "Vodafone D2 GmbH",
+      "operator_short_str": "Vodafone",
+      "mnc": "02",
+      "mcc": "262",
+      "analysis_report": {
+        "score": 0,
+        "fingerprints": {
+          "Release after IMSI extraction in GSM": {
+            "id_": "Release after IMSI extraction in GSM",
+            "type_": "Legitimate",
+            "times_triggered": 1,
+            "certainty": 0,
+            "description": "Releases connection after identity response. This alone can't be used to verify whether an IMSI catcher is malicious. The context is important in this case!"
+          }
+        },
+        "pcaps": [
+          {
+            "path": "file1.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.514296",
+              "longitude": "13.347437",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          }
+        ],
+        "distance_in_meters": 1100
+      },
+      "lac": "321",
+      "freq": "3",
+      "ci": "10503",
+      "rx_level": "-74",
+      "is_gprs_support": null
+    },
+    {
+      "rat": "2G",
+      "operator_str": "Vodafone D2 GmbH",
+      "operator_short_str": "Vodafone",
+      "mnc": "02",
+      "mcc": "262",
+      "analysis_report": {
+        "score": null,
+        "fingerprints": {},
+        "pcaps": [],
+        "distance_in_meters": null
+      },
+      "lac": "308",
+      "freq": "49",
+      "ci": "803",
+      "rx_level": "-76",
+      "is_gprs_support": null
+    },
+    {
+      "rat": "2G",
+      "operator_str": "Telekom Deutschland GmbH",
+      "operator_short_str": "Telekom",
+      "mnc": "01",
+      "mcc": "262",
+      "analysis_report": {
+        "score": 100,
+        "fingerprints": {
+          "Authentication and security skipping": {
+            "id_": "Authentication and security skipping",
+            "type_": "Interception",
+            "times_triggered": 1,
+            "certainty": 100,
+            "description": "Authentication and/or security is skipped."
+          },
+          "Release after IMSI extraction in GSM": {
+            "id_": "Release after IMSI extraction in GSM",
+            "type_": "Legitimate",
+            "times_triggered": 1,
+            "certainty": 0,
+            "description": "Releases connection after identity response. This alone can't be used to verify whether an IMSI catcher is malicious. The context is important in this case!"
+          }
+        },
+        "pcaps": [
+          {
+            "path": "file2.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.511146",
+              "longitude": "13.298740",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          }
+        ],
+        "distance_in_meters": 1100
+      },
+      "lac": "5127",
+      "freq": "54",
+      "ci": "19369",
+      "rx_level": "-76",
+      "is_gprs_support": null
+    },
+    {
+      "rat": "2G",
+      "operator_str": "Telefónica Germany GmbH & Co. oHG",
+      "operator_short_str": "O2",
+      "mnc": "03",
+      "mcc": "262",
+      "analysis_report": {
+        "score": 100,
+        "fingerprints": {
+          "Measurement report": {
+            "id_": "Unsecure encryption",
+            "type_": "Interception",
+            "times_triggered": 4,
+            "certainty": 100,
+            "description": "Weak encryption has been selected."
+          },
+          "Release after IMSI extraction in GSM": {
+            "id_": "Release after IMSI extraction in GSM",
+            "type_": "Legitimate",
+            "times_triggered": 2,
+            "certainty": 0,
+            "description": "Releases connection after identity response. This alone can't be used to verify whether an IMSI catcher is malicious. The context is important in this case!"
+          }
+        },
+        "pcaps": [
+          {
+            "path": "/opt/kingfisher/src/result/59c66ac2-d361-11ef-be6c-2ccf679a55e1.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.514296",
+              "longitude": "13.347437",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          },
+          {
+            "path": "file234433295098365.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.514623",
+              "longitude": "13.347419",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          },
+          {
+            "path": "file21324-4987-3daff.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.514623",
+              "longitude": "13.347419",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          }
+        ],
+        "distance_in_meters": 1100
+      },
+      "lac": "22020",
+      "freq": "1021",
+      "ci": "0",
+      "rx_level": "-78",
+      "is_gprs_support": null
+    },
+    {
+      "rat": "2G",
+      "operator_str": "Telekom Deutschland GmbH",
+      "operator_short_str": "Telekom",
+      "mnc": "01",
+      "mcc": "262",
+      "analysis_report": {
+        "score": 75,
+        "fingerprints": {
+          "Release after IMSI extraction in GSM": {
+            "id_": "Release after IMSI extraction in GSM",
+            "type_": "Legitimate",
+            "times_triggered": 100,
+            "certainty": 0,
+            "description": "Releases connection after identity response. This alone can't be used to verify whether an IMSI catcher is malicious. The context is important in this case!"
+          }
+        },
+        "pcaps": [
+          {
+            "path": "file4.pcap",
+            "gnss_position": {
+              "utc": "",
+              "latitude": "52.511824",
+              "longitude": "13.310594",
+              "hdop": "",
+              "altitude": "",
+              "fix": "3D fix",
+              "cog": "",
+              "spkm": "",
+              "spkn": "",
+              "date": "",
+              "nsat": ""
+            }
+          }
+        ],
+        "distance_in_meters": 550
+      },
+      "lac": "5127",
+      "freq": "67",
+      "ci": "19147",
+      "rx_level": "-79",
+      "is_gprs_support": null
+    }
+  ]
+}

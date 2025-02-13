@@ -122,10 +122,10 @@ const getIcon = (score, hasWarning) => {
 };
 
 const scoreRanges = [
-  { label: 'Null', value: 'null' },
-  { label: '0', value: '0' },
-  { label: '1-99', value: 'middle' },
-  { label: '<99', value: '100' }
+  { label: 'N/A', value: 'null' },
+  { label: 'Trusted', value: '0' },
+  { label: 'Undecided', value: 'middle' },
+  { label: 'Rogue', value: '100' }
 ];
 
 function Map() {
@@ -140,12 +140,11 @@ function Map() {
     timeRange: []
   });
   const timeRanges = [
-    { label: '< 1 hour', value: '1h' },
-    { label: '< 3 hours', value: '3h' },
-    { label: '< 6 hours', value: '6h' },
-    { label: '< 12 hours', value: '12h' },
-    { label: '< 24 hours', value: '24h' },
-    { label: '> 24 hours', value: 'older' }
+    { label: '1 hour ago', value: '1h' },
+    { label: '3 hours ago', value: '3h' },
+    { label: '12 hours ago', value: '12h' },
+    { label: '24 hours ago', value: '24h' },
+    { label: 'More than 24 hours', value: 'older' }
   ];
   const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
@@ -272,7 +271,6 @@ function Map() {
               >
                 <Popup>
                   <div style={styles.popup}>
-                    <div style={styles.popupTitle}>Tower Details</div>
                     {tower.kingfisher_id_changed && (
                       <div style={styles.popupWarning}>
                         Warning: This tower has been detected by a different Kingfisher device.
@@ -282,7 +280,7 @@ function Map() {
                     <div style={styles.popupRow}>RAT: {tower.rat}</div>
                     <div style={styles.popupRow}>Frequency: {tower.freq}</div>
                     <div style={styles.popupRow}>Distance: {tower.analysis_report.distance_in_meters}</div>
-                    <div style={styles.popupRow}>Score: {tower.analysis_report.score || 'Null'}</div>
+                    {/* <div style={styles.popupRow}>Score: {tower.analysis_report.score || 'Null'}</div> */}
                   </div>
                 </Popup>
               </Marker>
@@ -317,7 +315,7 @@ function Map() {
         </div>
 
         <div>
-          <label style={styles.label}>RAT:</label>
+          <label style={styles.label}>Network Generation:</label>
           <div style={styles.checkboxGroup}>
             {technologies.map(tech => (
               <label key={tech}>
@@ -349,7 +347,7 @@ function Map() {
         </div>
 
         <div>
-          <label style={styles.label}>Last Modified:</label>
+          <label style={styles.label}>Last Updated:</label>
           <div style={styles.checkboxGroup}>
             {timeRanges.map(range => (
               <label key={range.value}>
