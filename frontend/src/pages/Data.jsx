@@ -508,6 +508,7 @@ function Data() {
   const [newData, setNewData] = useState(null);
   const [stopChecking, setStopChecking] = useState(false);
   const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
+  const [newDataArrived, setNewDataArrived] = useState(false);
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
@@ -583,6 +584,7 @@ function Data() {
       
       // If it's a manual update (button click), update directly
       setTowers(fetchedData);
+      setNewDataArrived(false);
       
     } catch (err) {
       setError(err.message);
@@ -595,6 +597,7 @@ function Data() {
     if (newData) {
       setTowers(newData);
       setNewData(null);
+      setNewDataArrived(false);
     }
     setShowUpdatePrompt(false);
   };
@@ -602,6 +605,7 @@ function Data() {
   const handleDeclineUpdate = () => {
     setShowUpdatePrompt(false);
     setStopChecking(true);
+    setNewDataArrived(true);
   };
 
   useEffect(() => {
@@ -635,6 +639,7 @@ function Data() {
         if (hasChanges) {
           setNewData(fetchedData);
           setShowUpdatePrompt(true);
+          setNewDataArrived(true);
         }
       } catch (err) {
         console.error('Error checking for updates:', err);
@@ -773,6 +778,18 @@ function Data() {
         >
           Update Data
         </button>
+
+        {newDataArrived && (
+          <div style={{
+            color: '#666',
+            fontSize: '0.8rem',
+            textAlign: 'center',
+            marginBottom: '1rem',
+            fontStyle: 'italic'
+          }}>
+            New data has arrived. Click the button above to update.
+          </div>
+        )}
 
         <input
             type="text"
