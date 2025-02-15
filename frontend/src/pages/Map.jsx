@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
-import { Dialog } from '@mui/material';
 import 'leaflet/dist/leaflet.css';
 
 const styles = {
@@ -84,34 +83,6 @@ const styles = {
     color: '#ff6b6b',
     fontWeight: 'bold',
     marginBottom: '0.5rem'
-  },
-  dialog: {
-    backgroundColor: '#1a1a1a',
-    color: '#fff',
-    padding: '2rem',
-    minWidth: '400px'
-  },
-  dialogContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1rem'
-  },
-  dialogTitle: {
-    borderBottom: '1px solid #333',
-    paddingBottom: '1rem',
-    marginBottom: '1rem'
-  },
-  dialogSection: {
-    padding: '1rem'
-  },
-  button: {
-    background: '#646cff',
-    color: 'white',
-    border: 'none',
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.9rem'
   }
 };
 
@@ -157,55 +128,11 @@ const scoreRanges = [
   { label: 'Rogue', value: '100' }
 ];
 
-const UpdatePrompt = ({ open, onAccept, onDecline }) => {
-  return (
-    <Dialog 
-      open={open}
-      PaperProps={{ style: styles.dialog }}
-    >
-      <div style={styles.dialogContent}>
-        <div style={styles.dialogTitle}>
-          <h2 style={{ margin: 0 }}>New Data Available</h2>
-        </div>
-        <div style={styles.dialogSection}>
-          <p>New tower data has arrived. Do you want to update the display?</p>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            marginTop: '1rem',
-            justifyContent: 'flex-end'
-          }}>
-            <button 
-              style={styles.button}
-              onClick={onDecline}
-            >
-              Not Now
-            </button>
-            <button 
-              style={{
-                ...styles.button,
-                backgroundColor: '#4CAF50'
-              }}
-              onClick={onAccept}
-            >
-              Update
-            </button>
-          </div>
-        </div>
-      </div>
-    </Dialog>
-  );
-};
-
 function Map() {
   const [towers, setTowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [newData, setNewData] = useState(null);
-  const [stopChecking, setStopChecking] = useState(false);
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
-  const currentDataRef = useRef(towers);
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
@@ -246,10 +173,6 @@ function Map() {
     }
   };
 
-  useEffect(() => {
-    currentDataRef.current = towers;
-  }, [towers]);
-
   const fetchTowers = async () => {
     try {
       const response = await fetch('/api/towers', {
@@ -260,16 +183,8 @@ function Map() {
         }
       });
       if (!response.ok) throw new Error('Failed to fetch tower data');
-      const fetchedData = await response.json();
-      
-      // First load - set data directly
-      if (towers.length === 0) {
-        setTowers(fetchedData);
-        return;
-      }
-
-      setNewData(fetchedData);
-      setShowUpdatePrompt(true);
+      const newData = await response.json();
+      setTowers(newData);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -277,54 +192,11 @@ function Map() {
     }
   };
 
-  const handleAcceptUpdate = () => {
-    if (newData) {
-      setTowers(newData);
-      setNewData(null);
-    }
-    setShowUpdatePrompt(false);
-  };
-  
-  const handleDeclineUpdate = () => {
-    setShowUpdatePrompt(false);
-    setStopChecking(true);
-  };
-
-  // Initial data fetch
   useEffect(() => {
     fetchTowers();
-  }, []);
-
-  useEffect(() => {
-    if (stopChecking) return;
-
-    const checkUpdates = async () => {
-      try {
-        const response = await fetch('/api/towers', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        
-        if (!response.ok) throw new Error('Failed to fetch tower data');
-        const fetchedData = await response.json();
-        
-        const hasChanges = JSON.stringify(fetchedData) !== JSON.stringify(currentDataRef.current);
-        
-        if (hasChanges && !showUpdatePrompt) {
-          setNewData(fetchedData);
-          setShowUpdatePrompt(true);
-        }
-      } catch (err) {
-        console.error('Error checking for updates:', err);
-      }
-    };
-
-    const intervalId = setInterval(checkUpdates, 5000);
+    const intervalId = setInterval(fetchTowers, 5000);
     return () => clearInterval(intervalId);
-  }, [stopChecking, showUpdatePrompt]);
+  }, []);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prevFilters => ({
@@ -418,27 +290,6 @@ function Map() {
       </div>
 
       <div style={styles.filterContainer}>
-          <button 
-          style={{
-            ...styles.button,
-            width: '100%',
-            marginBottom: '1rem',
-            backgroundColor: '#4CAF50',
-            transition: 'background-color 0.3s ease, transform 0.1s ease'
-          }}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = '#45a049';
-            e.currentTarget.style.transform = 'translateY(-1px)';
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = '#4CAF50';
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-          onClick={fetchTowers}
-        >
-          Update Data
-        </button>
-
         <input
           type="text"
           placeholder="Search by CI number"
@@ -511,11 +362,6 @@ function Map() {
           </div>
         </div>
       </div>
-      <UpdatePrompt 
-        open={showUpdatePrompt}
-        onAccept={handleAcceptUpdate}
-        onDecline={handleDeclineUpdate}
-      />
     </div>
   );
 }
