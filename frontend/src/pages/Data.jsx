@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Dialog } from '@mui/material';
 
 const styles = {
@@ -171,6 +171,46 @@ const styles = {
     high: 'rgba(255, 0, 25, 0.3)',    // red
   }
 };
+
+function UpdatePrompt({ open, onAccept, onDecline }) {
+  return (
+    <Dialog 
+      open={open} 
+      PaperProps={{ style: styles.dialog }}
+    >
+      <div style={styles.dialogContent}>
+        <div style={styles.dialogTitle}>
+          <h2 style={{ margin: 0 }}>New Data Available</h2>
+        </div>
+        <div style={styles.dialogSection}>
+          <p>New tower data has arrived. Do you want to update the display?</p>
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            marginTop: '1rem',
+            justifyContent: 'flex-end'
+          }}>
+            <button 
+              style={styles.button}
+              onClick={onDecline}
+            >
+              Not Now
+            </button>
+            <button 
+              style={{
+                ...styles.button,
+                backgroundColor: '#4CAF50'
+              }}
+              onClick={onAccept}
+            >
+              Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
 
 function TowerDetails({ tower, open, onClose }) {
   return (
@@ -465,6 +505,9 @@ function Data() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTower, setSelectedTower] = useState(null);
+  const [newData, setNewData] = useState(null);
+  const [stopChecking, setStopChecking] = useState(false);
+  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
@@ -488,7 +531,7 @@ function Data() {
     { label: '24 hours ago', value: '24h' },
     { label: 'More than 24 hours', value: 'older' }
   ];
-
+  const currentDataRef = useRef(towers);
   const isInTimeRange = (lastModified, range) => {
     if (!lastModified) return false;
     const date = new Date(lastModified);
@@ -500,8 +543,6 @@ function Data() {
         return hoursDiff < 1;
       case '3h':
         return hoursDiff < 3;
-      case '6h':
-        return hoursDiff < 6;
       case '12h':
         return hoursDiff < 12;
       case '24h':
@@ -538,8 +579,11 @@ function Data() {
         }
       });
       if (!response.ok) throw new Error('Failed to fetch tower data');
-      const newData = await response.json();
-      setTowers(newData);
+      const fetchedData = await response.json();
+      
+      // If it's a manual update (button click), update directly
+      setTowers(fetchedData);
+      
     } catch (err) {
       setError(err.message);
     } finally {
@@ -547,11 +591,59 @@ function Data() {
     }
   };
 
+  const handleAcceptUpdate = () => {
+    if (newData) {
+      setTowers(newData);
+      setNewData(null);
+    }
+    setShowUpdatePrompt(false);
+  };
+  
+  const handleDeclineUpdate = () => {
+    setShowUpdatePrompt(false);
+    setStopChecking(true);
+  };
+
   useEffect(() => {
-    fetchTowers();
-    const intervalId = setInterval(fetchTowers, 5000);
-    return () => clearInterval(intervalId);
+    fetchTowers(); // Initial data fetch when component mounts
   }, []);
+
+  useEffect(() => {
+    currentDataRef.current = towers;
+  }, [towers]);
+  
+  // Add a separate useEffect for subsequent data checks
+  useEffect(() => {
+    if (stopChecking) return;
+
+    const checkUpdates = async () => {
+      try {
+        const response = await fetch('/api/towers', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch tower data');
+        const fetchedData = await response.json();
+        
+        // Compare with ref instead of towers state
+        const hasChanges = JSON.stringify(fetchedData) !== JSON.stringify(currentDataRef.current);
+        
+        if (hasChanges) {
+          setNewData(fetchedData);
+          setShowUpdatePrompt(true);
+        }
+      } catch (err) {
+        console.error('Error checking for updates:', err);
+      }
+    };
+
+    const intervalId = setInterval(checkUpdates, 5000);
+    return () => clearInterval(intervalId);
+  }, [stopChecking]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prevFilters => ({
@@ -657,6 +749,31 @@ function Data() {
       </div>
 
       <div style={styles.filterContainer}>
+        <button 
+          style={{
+            ...styles.button,
+            width: '100%',
+            marginBottom: '1rem',
+            backgroundColor: '#4CAF50',
+            transition: 'background-color 0.3s ease, transform 0.1s ease',
+            ':hover': {
+              backgroundColor: '#45a049',
+              transform: 'translateY(-1px)'
+            }
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#45a049';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#4CAF50';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+          onClick={fetchTowers}
+        >
+          Update Data
+        </button>
+
         <input
             type="text"
             placeholder="Search by CI number"
@@ -751,6 +868,11 @@ function Data() {
           }}
         />
       )}
+      <UpdatePrompt 
+        open={showUpdatePrompt}
+        onAccept={handleAcceptUpdate}
+        onDecline={handleDeclineUpdate}
+      />
     </div>
   );
 }
