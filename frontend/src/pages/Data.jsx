@@ -527,7 +527,6 @@ function Data() {
   ]
   const timeRanges = [
     { label: '1 hour ago', value: '1h' },
-    { label: '3 hours ago', value: '3h' },
     { label: '12 hours ago', value: '12h' },
     { label: '24 hours ago', value: '24h' },
     { label: 'More than 24 hours', value: 'older' }
@@ -609,14 +608,13 @@ function Data() {
   };
 
   useEffect(() => {
-    fetchTowers(); // Initial data fetch when component mounts
+    fetchTowers();
   }, []);
 
   useEffect(() => {
     currentDataRef.current = towers;
   }, [towers]);
   
-  // Add a separate useEffect for subsequent data checks
   useEffect(() => {
     if (stopChecking) return;
 
@@ -633,7 +631,6 @@ function Data() {
         if (!response.ok) throw new Error('Failed to fetch tower data');
         const fetchedData = await response.json();
         
-        // Compare with ref instead of towers state
         const hasChanges = JSON.stringify(fetchedData) !== JSON.stringify(currentDataRef.current);
         
         if (hasChanges) {

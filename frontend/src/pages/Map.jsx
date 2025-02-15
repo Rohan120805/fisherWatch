@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Dialog from '@mui/material/Dialog';
 
 const styles = {
   container: {
@@ -83,6 +84,42 @@ const styles = {
     color: '#ff6b6b',
     fontWeight: 'bold',
     marginBottom: '0.5rem'
+  },
+  dialog: {
+    backgroundColor: '#1a1a1a',
+    color: '#fff',
+    padding: '2rem',
+    minWidth: '600px',
+    maxWidth: '90%',
+    maxHeight: '90vh',
+    overflowY: 'auto'
+  },
+  dialogContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1.5rem'
+  },
+  dialogTitle: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '1rem',
+    borderBottom: '1px solid #333',
+    marginBottom: '1rem'
+  },
+  dialogSection: {
+    backgroundColor: '#2a2a2a',
+    padding: '1rem',
+    borderRadius: '4px'
+  },
+  button: {
+    background: '#646cff',
+    color: 'white',
+    border: 'none',
+    padding: '0.5rem 1rem',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '0.9rem'
   }
 };
 
@@ -128,26 +165,155 @@ const scoreRanges = [
   { label: 'Rogue', value: '100' }
 ];
 
+function UpdatePrompt({ open, onAccept, onDecline }) {
+  return (
+    <Dialog 
+      open={open} 
+      PaperProps={{ style: styles.dialog }}
+    >
+      <div style={styles.dialogContent}>
+        <div style={styles.dialogTitle}>
+          <h2 style={{ margin: 0 }}>New Data Available</h2>
+        </div>
+        <div style={styles.dialogSection}>
+          <p>New tower data has arrived. Do you want to update the display?</p>
+          <div style={{
+            display: 'flex',
+            gap: '1rem',
+            marginTop: '1rem',
+            justifyContent: 'flex-end'
+          }}>
+            <button 
+              style={styles.button}
+              onClick={onDecline}
+            >
+              Not Now
+            </button>
+            <button 
+              style={{
+                ...styles.button,
+                backgroundColor: '#4CAF50'
+              }}
+              onClick={onAccept}
+            >
+              Update
+            </button>
+          </div>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
 function Map() {
   const [towers, setTowers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [newData, setNewData] = useState(null);
+  const [stopChecking, setStopChecking] = useState(false);
+  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
+  const [newDataArrived, setNewDataArrived] = useState(false);
   const [filters, setFilters] = useState({
     operator: [],
     technology: [],
     score: [],
     timeRange: []
   });
+  
   const timeRanges = [
     { label: '1 hour ago', value: '1h' },
-    { label: '3 hours ago', value: '3h' },
     { label: '12 hours ago', value: '12h' },
     { label: '24 hours ago', value: '24h' },
     { label: 'More than 24 hours', value: 'older' }
   ];
   const operators = [...new Set(towers.map(tower => tower.operator_short_str))];
   const technologies = [...new Set(towers.map(tower => tower.rat))];
+  const currentDataRef = useRef(towers);
+
+  const fetchTowers = async () => {
+    try {
+      const response = await fetch('/api/towers', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to fetch tower data');
+      const fetchedData = await response.json();
+      setTowers(fetchedData);
+      setNewDataArrived(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAcceptUpdate = () => {
+    if (newData) {
+      setTowers(newData);
+      setNewData(null);
+      setNewDataArrived(false);
+    }
+    setShowUpdatePrompt(false);
+  };
+
+  const handleDeclineUpdate = () => {
+    setShowUpdatePrompt(false);
+    setStopChecking(true);
+    setNewDataArrived(true);
+  };
+
+  useEffect(() => {
+    fetchTowers();
+  }, []);
+
+  useEffect(() => {
+    currentDataRef.current = towers;
+  }, [towers]);
+
+  useEffect(() => {
+    if (stopChecking) return;
+
+    const checkUpdates = async () => {
+      try {
+        const response = await fetch('/api/towers', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch tower data');
+        const fetchedData = await response.json();
+        
+        const hasChanges = JSON.stringify(fetchedData) !== JSON.stringify(currentDataRef.current);
+        
+        if (hasChanges) {
+          setNewData(fetchedData);
+          setShowUpdatePrompt(true);
+          setNewDataArrived(true);
+        }
+      } catch (err) {
+        console.error('Error checking for updates:', err);
+      }
+    };
+
+    const intervalId = setInterval(checkUpdates, 5000);
+    return () => clearInterval(intervalId);
+  }, [stopChecking]);
+
+  const handleFilterChange = (filterType, value) => {
+    setFilters(prevFilters => ({
+      ...prevFilters,
+      [filterType]: prevFilters[filterType].includes(value)
+        ? prevFilters[filterType].filter(item => item !== value)
+        : [...prevFilters[filterType], value]
+    }));
+  };
 
   const isInTimeRange = (lastModified, range) => {
     if (!lastModified) return false;
@@ -160,8 +326,6 @@ function Map() {
         return hoursDiff < 1;
       case '3h':
         return hoursDiff < 3;
-      case '6h':
-        return hoursDiff < 6;
       case '12h':
         return hoursDiff < 12;
       case '24h':
@@ -171,40 +335,6 @@ function Map() {
       default:
         return true;
     }
-  };
-
-  const fetchTowers = async () => {
-    try {
-      const response = await fetch('/api/towers', {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      if (!response.ok) throw new Error('Failed to fetch tower data');
-      const newData = await response.json();
-      setTowers(newData);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchTowers();
-    const intervalId = setInterval(fetchTowers, 5000);
-    return () => clearInterval(intervalId);
-  }, []);
-
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prevFilters => ({
-      ...prevFilters,
-      [filterType]: prevFilters[filterType].includes(value)
-        ? prevFilters[filterType].filter(item => item !== value)
-        : [...prevFilters[filterType], value]
-    }));
   };
 
   const isScoreInRange = (score, range) => {
@@ -280,7 +410,6 @@ function Map() {
                     <div style={styles.popupRow}>RAT: {tower.rat}</div>
                     <div style={styles.popupRow}>Frequency: {tower.freq}</div>
                     <div style={styles.popupRow}>Distance: {tower.analysis_report.distance_in_meters}</div>
-                    {/* <div style={styles.popupRow}>Score: {tower.analysis_report.score || 'Null'}</div> */}
                   </div>
                 </Popup>
               </Marker>
@@ -290,6 +419,43 @@ function Map() {
       </div>
 
       <div style={styles.filterContainer}>
+        <button 
+          style={{
+            ...styles.button,
+            width: '100%',
+            marginBottom: '1rem',
+            backgroundColor: '#4CAF50',
+            transition: 'background-color 0.3s ease, transform 0.1s ease',
+            ':hover': {
+              backgroundColor: '#45a049',
+              transform: 'translateY(-1px)'
+            }
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#45a049';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = '#4CAF50';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+          onClick={fetchTowers}
+        >
+          Update Data
+        </button>
+
+        {newDataArrived && (
+          <div style={{
+            color: '#666',
+            fontSize: '0.8rem',
+            textAlign: 'center',
+            marginBottom: '1rem',
+            fontStyle: 'italic'
+          }}>
+            New data has arrived. Click the button above to update.
+          </div>
+        )}
+
         <input
           type="text"
           placeholder="Search by CI number"
@@ -362,6 +528,12 @@ function Map() {
           </div>
         </div>
       </div>
+
+      <UpdatePrompt 
+        open={showUpdatePrompt}
+        onAccept={handleAcceptUpdate}
+        onDecline={handleDeclineUpdate}
+      />
     </div>
   );
 }
