@@ -123,10 +123,10 @@ const styles = {
   }
 };
 
-const getIcon = (score, hasWarning) => {
-  if (hasWarning) {
+const getIcon = (score, hasWarning, isHighlighted) => {
+  if (isHighlighted) {
     return new Icon({
-      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+      iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
       iconSize: [25, 41],
       iconAnchor: [12, 41],
@@ -220,6 +220,9 @@ function Map() {
     score: [],
     timeRange: []
   });
+  const [initialCenter, setInitialCenter] = useState([0, 0]);
+  const [initialZoom, setInitialZoom] = useState(5);
+  const [highlightedTower, setHighlightedTower] = useState(null);
   
   const timeRanges = [
     { label: '1 hour ago', value: '1h' },
@@ -268,6 +271,24 @@ function Map() {
 
   useEffect(() => {
     fetchTowers();
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lat = params.get('lat');
+    const lon = params.get('lon');
+    const ci = params.get('ci');
+
+    if (lat && lon) {
+      // Set initial center to the tower's location
+      setInitialCenter([parseFloat(lat), parseFloat(lon)]);
+      setInitialZoom(18); // Set a closer zoom level
+    }
+
+    // Highlight the specific tower if CI is provided
+    if (ci) {
+      setHighlightedTower(ci);
+    }
   }, []);
 
   useEffect(() => {
@@ -380,8 +401,8 @@ function Map() {
     <div style={styles.container}>
       <div style={styles.mapWrapper}>
         <MapContainer 
-          center={center} 
-          zoom={5} 
+          center={initialCenter}
+          zoom={initialZoom} 
           style={{ width: '100%', height: '100%', borderRadius: '4px' }}
           scrollWheelZoom={true}
         >
@@ -397,7 +418,11 @@ function Map() {
               <Marker 
                 key={`${tower.ci}-${tower.timestamp}`}
                 position={[position.latitude, position.longitude]}
-                icon={getIcon(tower.analysis_report.score, tower.kingfisher_id_changed)}
+                icon={getIcon(
+                  tower.analysis_report.score, 
+                  tower.kingfisher_id_changed,
+                  highlightedTower === tower.ci.toString() // Add highlighted state
+                )}
               >
                 <Popup>
                   <div style={styles.popup}>

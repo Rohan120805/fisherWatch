@@ -60,14 +60,17 @@ const styles = {
   },
   th: {
     backgroundColor: '#2a2a2a',
-    padding: '12px',
+    padding: '16px 12px',
     textAlign: 'center',
     borderBottom: '1px solid #333',
     position: 'sticky',
     top: 0,
     zIndex: 10,
-    whiteSpace: 'nowrap',
-    boxShadow: '0 2px 2px -1px rgba(0, 0, 0, 0.4)'
+    whiteSpace: 'normal',
+    boxShadow: '0 2px 2px -1px rgba(0, 0, 0, 0.4)',
+    minHeight: '60px',
+    verticalAlign: 'middle',
+    lineHeight: '1.2'
   },
   td: {
     textAlign: 'center',
@@ -169,6 +172,25 @@ const styles = {
     zero: 'rgba(40, 167, 69, 0.3)',   // green
     middle: 'rgba(255, 85, 0, 0.3)',  // orange
     high: 'rgba(255, 0, 25, 0.3)',    // red
+  }
+};
+
+const newStyles = {
+  ...styles,
+  mapIcon: {
+    width: '16px',
+    height: '16px',
+    filter: 'invert(100%)',
+    verticalAlign: 'middle',
+    marginTop: '-2px'
+  },
+  iconButton: {
+    ...styles.button,
+    padding: '0.5rem',
+    minWidth: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 };
 
@@ -741,6 +763,23 @@ function Data() {
                       disabled={!tower.analysis_report}
                     >
                       Analysis
+                    </button>
+                    <button
+                      style={newStyles.iconButton}
+                      onClick={() => {
+                        const position = tower.analysis_report?.pcaps[0]?.gnss_position;
+                        if (position) {
+                          window.location.href = `/map?lat=${position.latitude}&lon=${position.longitude}`;
+                        }
+                      }}
+                      disabled={!tower.analysis_report?.pcaps[0]?.gnss_position}
+                      title="Show on Map" // Adds tooltip on hover
+                    >
+                      <img 
+                        src="src\assets\mapIcon.png" 
+                        alt="Map Icon" 
+                        style={newStyles.mapIcon}
+                      />
                     </button>
                   </div>
                 </td>
