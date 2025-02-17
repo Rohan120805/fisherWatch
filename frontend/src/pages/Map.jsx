@@ -225,6 +225,7 @@ function Map() {
   const [highlightedTower, setHighlightedTower] = useState(null);
   
   const timeRanges = [
+    { label: 'Latest Update', value: 'latest' },
     { label: '1 hour ago', value: '1h' },
     { label: '12 hours ago', value: '12h' },
     { label: '24 hours ago', value: '24h' },
@@ -343,6 +344,11 @@ function Map() {
     const hoursDiff = (now - date) / (1000 * 60 * 60);
   
     switch (range) {
+      case 'latest':
+        const latestTimestamp = Math.max(...towers.map(t => 
+          new Date(t.last_modified || t.updatedAt).getTime()
+        ));
+        return new Date(lastModified).getTime() === latestTimestamp;
       case '1h':
         return hoursDiff < 1;
       case '3h':

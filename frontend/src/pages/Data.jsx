@@ -548,6 +548,7 @@ function Data() {
     { label: 'Rogue', value: '100' }
   ]
   const timeRanges = [
+    { label: 'Latest Update', value: 'latest' },
     { label: '1 hour ago', value: '1h' },
     { label: '12 hours ago', value: '12h' },
     { label: '24 hours ago', value: '24h' },
@@ -561,10 +562,13 @@ function Data() {
     const hoursDiff = (now - date) / (1000 * 60 * 60);
   
     switch (range) {
+      case 'latest':
+      const latestTimestamp = Math.max(...towers.map(t => 
+        new Date(t.last_modified || t.updatedAt).getTime()
+      ));
+      return new Date(lastModified).getTime() === latestTimestamp;
       case '1h':
         return hoursDiff < 1;
-      case '3h':
-        return hoursDiff < 3;
       case '12h':
         return hoursDiff < 12;
       case '24h':
