@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import Dialog from '@mui/material/Dialog';
+import './ScrollBar.css';
 
 const styles = {
   container: {
@@ -31,20 +32,18 @@ const styles = {
     overflow: 'auto',
     position: 'sticky',
     top: '64px',
-    '&::-webkit-scrollbar': {
-      width: '8px',
-    },
-    '&::-webkit-scrollbar-track': {
+    WebkitScrollbarWidth: '8px',
+    WebkitScrollbarTrack: {
       background: '#1a1a1a',
-      borderRadius: '4px',
+      borderRadius: '4px'
     },
-    '&::-webkit-scrollbar-thumb': {
+    WebkitScrollbarThumb: {
       background: '#333',
       borderRadius: '4px',
       '&:hover': {
-        background: '#444',
-      },
-    },
+        background: '#444'
+      }
+    }
   },
   filterSection: {
     width: '100%',
@@ -429,7 +428,7 @@ function Map() {
     <div style={styles.container}>
       <div style={styles.mapWrapper}>
         <MapContainer 
-          center={initialCenter}
+          center={initialCenter[0] > 0 ? initialCenter : center}
           zoom={initialZoom} 
           style={{ width: '100%', height: '100%', borderRadius: '4px' }}
           scrollWheelZoom={true}
@@ -471,7 +470,7 @@ function Map() {
         </MapContainer>
       </div>
 
-      <div style={styles.filterContainer}>
+      <div style={styles.filterContainer} className='filter-container'>
         <button 
           style={{
             ...styles.button,
