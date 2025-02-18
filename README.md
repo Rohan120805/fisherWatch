@@ -41,7 +41,9 @@ A secure web application for managing tower data with mutual TLS authentication.
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/Rohan120805/fisherWatch.git
+```
+```bash
 cd towers
 ```
 
@@ -55,11 +57,15 @@ mkdir -p certs/{ca,server,client}
 # 1. Generate CA private key and certificate
 ```bash
 openssl genrsa -out certs/ca/ca.key 4096
+```
+```bash
 openssl req -x509 -new -nodes -key certs/ca/ca.key -sha256 -days 3650 -out certs/ca/ca.crt -subj "/CN=TowerCA"
 ```
 # 2. Generate server private key and CSR
 ```bash
 openssl genrsa -out certs/server/server.key 4096
+```
+```bash
 openssl req -new -key certs/server/server.key -out certs/server/server.csr -subj "/CN=localhost"
 ```
 # 3. Generate server certificate signed by CA
@@ -69,6 +75,8 @@ openssl x509 -req -in certs/server/server.csr -CA certs/ca/ca.crt -CAkey certs/c
 # 4. Generate client private key and CSR
 ```bash
 openssl genrsa -out certs/client/client.key 4096
+```
+```bash
 openssl req -new -key certs/client/client.key -out certs/client/client.csr -subj "/CN=client"
 ```
 # 5. Generate client certificate signed by CA
@@ -80,6 +88,8 @@ openssl x509 -req -in certs/client/client.csr -CA certs/ca/ca.crt -CAkey certs/c
 
 ```bash
 cd backend
+```
+```bash
 npm install
 ```
 
@@ -87,6 +97,8 @@ npm install
 
 ```bash
 cd ../frontend
+```
+```bash
 npm install
 ```
 
