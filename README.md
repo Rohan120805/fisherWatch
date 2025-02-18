@@ -49,7 +49,16 @@ cd towers
 
 2. Create certificate directories:
 ```bash
-mkdir -p certs/{ca,server,client}
+mkdir certs
+```
+```bash
+mkdir certs\ca
+```
+```bash
+mkdir certs\server
+```
+```bash
+mkdir certs\client
 ```
 
 3. Generate SSL certificates using OpenSSL:
