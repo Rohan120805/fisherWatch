@@ -68,7 +68,7 @@ mkdir certs\client
 openssl genrsa -out certs/ca/ca.key 4096
 ```
 ```bash
-openssl req -x509 -new -nodes -key certs/ca/ca.key -sha256 -days 3650 -out certs/ca/ca.crt -subj "/CN=TowerCA"
+openssl req -x509 -new -nodes -key certs/ca/ca.key -sha256 -days 3650 -out certs/ca/ca.crt -subj "/CN=FisherWatch"
 ```
 # 2. Generate server private key and CSR
 ```bash
