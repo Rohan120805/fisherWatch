@@ -26,7 +26,29 @@ const styles = {
     width: '250px',
     backgroundColor: '#1a1a1a',
     borderRadius: '8px',
-    marginLeft: 'auto'
+    marginLeft: '1rem',
+    height: 'calc(100vh - 96px)',
+    overflow: 'auto',
+    position: 'sticky',
+    top: '64px',
+    '&::-webkit-scrollbar': {
+      width: '8px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: '#1a1a1a',
+      borderRadius: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      background: '#333',
+      borderRadius: '4px',
+      '&:hover': {
+        background: '#444',
+      },
+    },
+  },
+  filterSection: {
+    width: '100%',
+    marginBottom: '1rem',
   },
   checkboxGroup: {
     display: 'flex',
