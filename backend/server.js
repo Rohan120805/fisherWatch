@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import towerRoutes from './routes/tower.routes.js';
-import { clerkMiddleware } from '@clerk/express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import https from 'https';
@@ -44,7 +43,13 @@ app.use(express.json());
 connectDB();
 
 // API routes
+
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 app.use('/api', towerRoutes);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+});
 
 // Load certificates and keys
 const options = {

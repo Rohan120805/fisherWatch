@@ -267,6 +267,7 @@ function Map() {
       });
       if (!response.ok) throw new Error('Failed to fetch tower data');
       const fetchedData = await response.json();
+      setStopChecking(false);
       setTowers(fetchedData);
       setNewDataArrived(false);
     } catch (err) {

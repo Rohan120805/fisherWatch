@@ -20,7 +20,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: process.env.VITE_API_URL,
-        secure: false,
+        secure: true,
         changeOrigin: true,
         agent: new https.Agent({
           key: fs.readFileSync(path.join(__dirname, process.env.VITE_CLIENT_KEY_PATH)),

@@ -347,11 +347,11 @@ function TowerDetails({ tower, open, onClose }) {
           <div style={styles.dialogSectionTitle}>Signal Information</div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Signal Power:</span>
-            <span>{tower.signal_power+' dBm' || 'N/A'}</span>
+            <span>{tower.signal_power || 'N/A'}</span>
           </div>
           <div style={styles.dialogRow}>
             <span style={styles.dialogLabel}>Signal Quality:</span>
-            <span>{tower.signal_quality+' dB' || 'N/A'}</span>
+            <span>{tower.signal_quality || 'N/A'}</span>
           </div>
         </div>
 
@@ -629,6 +629,7 @@ function Data() {
       const fetchedData = await response.json();
       
       // If it's a manual update (button click), update directly
+      setStopChecking(false);
       setTowers(fetchedData);
       setNewDataArrived(false);
       
