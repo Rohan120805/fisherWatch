@@ -802,7 +802,7 @@ function Data() {
                       title="Show on Map" // Adds tooltip on hover
                     >
                       <img 
-                        src="src\assets\mapIcon.png" 
+                        src="assets\mapIcon.png" 
                         alt="Map Icon" 
                         style={newStyles.mapIcon}
                       />
