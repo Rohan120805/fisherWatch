@@ -163,3 +163,35 @@ POST https://localhost:5000/api/towers
 ```bash
 Content-Type: application/json
 ```
+
+### Browser Configuration
+
+#### Creating Combined Certificate for Browser
+
+1. Create PKCS#12 (.p12) file combining client certificate and private key:
+```bash
+openssl pkcs12 -export -out certs/client/client.p12 -inkey certs/client/client.key -in certs/client/client.crt -certfile certs/ca/ca.crt
+```
+
+#### Importing Certificates in Chrome
+
+1. Import Client Certificate:
+   - Open Chrome Settings (⋮ menu > Settings)
+   - Navigate to Privacy and security > Security > Manage certificates
+   - Go to "Your Certificates" tab
+   - Click "Import"
+   - Select `certs/client/client.p12`
+   - Enter the password you set when creating the .p12 file
+
+2. Import CA Certificate (if needed):
+   - In Chrome Settings > Security > Manage certificates
+   - Go to "Trusted Root Certification Authorities" tab
+   - Click "Import"
+   - Select `certs/ca/ca.crt`
+
+3. Restart Chrome
+
+After configuration, when visiting `https://localhost:5000`:
+   - Chrome will recognize your client certificate
+   - Present it automatically to the server
+   - Allow secure access to the application

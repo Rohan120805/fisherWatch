@@ -11,11 +11,11 @@ function RotatingGlobe() {
   const lerpSpeed = 0.1
 
   const [colorMap, bumpMap, cloudsMap, waterMap, starsMap] = useLoader(THREE.TextureLoader, [
-    'src/assets/earth/2_no_clouds_4k.jpg',
-    'src/assets/earth/elev_bump_4k.jpg',
-    'src/assets/earth/fair_clouds_4k.png',
-    'src/assets/earth/water_4k.png',
-    'src/assets/earth/galaxy_starfield.png',
+    '/assets/earth/2_no_clouds_4k.jpg',
+    '/assets/earth/elev_bump_4k.jpg',
+    '/assets/earth/fair_clouds_4k.png',
+    '/assets/earth/water_4k.png',
+    '/assets/earth/galaxy_starfield.png',
   ])
 
   useFrame(({ mouse }) => {
