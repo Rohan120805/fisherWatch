@@ -141,3 +141,25 @@ VITE_PORT=5173
 ```bash
 npm run dev
 ```
+
+## Testing with Postman
+
+### Configure Mutual TLS Authentication in Postman
+
+1. Open Postman and create a new request
+2. Go to Settings (Gear Icon) > Certificates
+3. Add Client Certificate:
+   - Host: localhost:5000
+   - CRT file: /certs/client/client.crt
+   - KEY file: /certs/client/client.key
+   - CA file: /certs/ca/ca.crt
+
+### Send Data to API Endpoints
+
+1. **Add Tower Data**
+```bash
+POST https://localhost:5000/api/towers
+```
+```bash
+Content-Type: application/json
+```
