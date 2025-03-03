@@ -43,9 +43,6 @@ A secure web application for managing tower data with mutual TLS authentication.
 ```bash
 git clone https://github.com/Rohan120805/fisherWatch.git
 ```
-```bash
-cd towers
-```
 
 2. Create certificate directories:
 ```bash
@@ -139,12 +136,8 @@ VITE_PORT=5173
 
 7. Running the Application:
 # Note: Run these commands in the root directory of the project.
-# To run in development mode:
-```bash
-npm run dev
-```
 
 # To deploy the Application:
 ```bash
-npm run deploy
+npm run dev
 ```
