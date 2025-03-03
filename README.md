@@ -87,7 +87,7 @@ openssl req -new -key certs/client/client.key -out certs/client/client.csr -subj
 ```
 # 5. Generate client certificate signed by CA
 ```bash
-openssl x509 -req -in certs/client/client.csr -CA certs/ca/ca.crt -CAkey certs/ca/ca.key-CAcreateserial -out certs/client/client.crt -days 365 -sha256
+openssl x509 -req -in certs/client/client.csr -CA certs/ca/ca.crt -CAkey certs/ca/ca.key -CAcreateserial -out certs/client/client.crt -days 365 -sha256
 ```
 
 4. Install backend dependencies:
