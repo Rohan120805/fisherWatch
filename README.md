@@ -134,14 +134,6 @@ SERVER_CERT_PATH=../certs/server/server.crt
 VITE_PORT=5173
 ```
 
-7. Running the Application:
-# Note: Run these commands in the root directory of the project.
-
-# To deploy the Application:
-```bash
-npm run dev
-```
-
 ## Testing with Postman
 
 ### Configure Mutual TLS Authentication in Postman
@@ -195,3 +187,11 @@ After configuration, when visiting `https://localhost:5000`:
    - Chrome will recognize your client certificate
    - Present it automatically to the server
    - Allow secure access to the application
+
+7. Running the Application:
+# Note: Run these commands in the root directory of the project.
+
+# To deploy the Application:
+```bash
+npm run deploy
+```
