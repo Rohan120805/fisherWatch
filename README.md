@@ -191,6 +191,11 @@ After configuration, when visiting `https://localhost:5000`:
 7. Running the Application:
 # Note: Run these commands in the root directory of the project.
 
+# To run the Application in Development mode:
+```bash
+npm run dev
+```
+
 # To deploy the Application:
 ```bash
 npm run deploy

@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export const connectDB = async () => {
     try {
-        const mongoUri = "mongodb://0.0.0.0:27017/towers";
+        const mongoUri = process.env.MONGO_LOCAL_URI;
         
         const options = {
             useNewUrlParser: true,
