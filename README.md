@@ -12,19 +12,6 @@ You can further customize it by adding:
 - Troubleshooting guide
 - API documentation
 - Contributing guidelines
-This README provides clear instructions for:
-1. Setting up the development environment
-2. Generating necessary SSL certificates
-3. Installing dependencies
-4. Configuring environment variables
-5. Running the application
-6. Understanding security features
-
-You can further customize it by adding:
-- Specific version requirements
-- Troubleshooting guide
-- API documentation
-- Contributing guidelines
 
 # Tower Data Web Application
 
