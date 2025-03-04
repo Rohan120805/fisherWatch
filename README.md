@@ -112,7 +112,6 @@ npm install
 # Create .env file in the root directory:
 
 ```
-MONGO_URI=<your-mongodb-uri>
 MONGO_LOCAL_URI=mongodb://0.0.0.0:27017/towers
 PORT=5000
 SERVER=https://localhost:5000
