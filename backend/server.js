@@ -3,10 +3,12 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import towerRoutes from './routes/tower.routes.js';
+import userRoutes from './routes/user.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import https from 'https';
 import fs from 'fs';
+import session from 'express-session';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +31,19 @@ app.use(cors({
   maxAge: 600
 }));
 
+// Session middleware
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: true, // Requires HTTPS
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Client certificate authentication
 app.use((req, res, next) => {
   if (!req.client.authorized) {
     return res.status(401).json({ message: 'Unauthorized' });
@@ -39,14 +54,27 @@ app.use((req, res, next) => {
 // Regular middleware
 app.use(express.json());
 
+// Authentication middleware
+const requireAuth = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: 'Please login first' });
+  }
+  next();
+};
+
 // Connect to MongoDB
 connectDB();
 
 // API routes
-
 app.use(express.static(path.join(__dirname, '../frontend/dist')));
-app.use('/api', towerRoutes);
 
+// Auth routes - no authentication required
+app.use('/api/users', userRoutes);
+
+// Protected routes - require authentication
+app.use('/api', requireAuth, towerRoutes);
+
+// Serve frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
 });
@@ -60,6 +88,7 @@ const options = {
   rejectUnauthorized: true
 };
 
+// Create HTTPS server
 https.createServer(options, app).listen(process.env.PORT, () => {
   console.log(`Server running on ${process.env.SERVER}`);
 }).on('error', (err) => {

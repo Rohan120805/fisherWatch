@@ -1,62 +1,108 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 
 const styles = {
-  home: {
-    width: '100%',
-    minHeight: '100vh',
-  },
-  content: {
-    marginTop: '4rem',
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '2rem',
     padding: '2rem',
+    marginTop: '4rem'
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1rem',
+    width: '100%',
+    maxWidth: '400px',
+    padding: '2rem',
+    backgroundColor: '#1a1a1a',
+    borderRadius: '8px'
+  },
+  input: {
+    padding: '0.8rem',
+    borderRadius: '4px',
+    border: '1px solid #333',
+    backgroundColor: '#2a2a2a',
+    color: '#fff',
+    fontSize: '1rem'
+  },
+  button: {
+    padding: '0.8rem',
+    borderRadius: '4px',
+    border: 'none',
+    backgroundColor: '#646cff',
+    color: '#fff',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s'
+  },
+  error: {
+    color: '#ff4444',
+    fontSize: '0.9rem',
+    textAlign: 'center'
   }
 };
 
-const textStyle = {
-  textAlign: 'center',
-  width: '100%',
-  margin: '0 auto',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center'
-};
-
-const appContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  minHeight: '100vh',
-  width: '100%',
-  gap: '20px',
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  margin: 0,
-  padding: 0
-};
-
-const contentContainerStyle = {
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center',
-  width: '100%',
-  maxWidth: '1200px',
-  margin: '0 auto',
-  padding: '20px'
-};
-
 function Home() {
+  const [userId, setUserId] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, password }),
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Login failed');
+      }
+
+      navigate('/data');
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
-    <div style={appContainerStyle}>
-      <div style={contentContainerStyle}>
-      <Navbar />
-      <h1 style={textStyle}>Welcome to Fisher Watch.<br></br>A place where the Towers are watched.</h1>
-      <div style={styles.content}>
-      </div>
-    </div>
+    <div style={styles.container}>
+      <h1>Welcome to Fisher Watch</h1>
+      <p>A place where the Towers are watched.</p>
+      
+      <form onSubmit={handleSubmit} style={styles.form}>
+        <h2>Login</h2>
+        {error && <div style={styles.error}>{error}</div>}
+        <input
+          type="text"
+          placeholder="User ID"
+          value={userId}
+          onChange={(e) => setUserId(e.target.value)}
+          style={styles.input}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={styles.input}
+          required
+        />
+        <button type="submit" style={styles.button}>
+          Login
+        </button>
+      </form>
     </div>
   );
 }

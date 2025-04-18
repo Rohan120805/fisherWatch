@@ -37,6 +37,19 @@ const styles = {
       backgroundColor: '#646cff',
       transform: 'translateY(-2px)'
     }
+  },
+  logoutButton: {
+    color: '#fff',
+    background: 'transparent',
+    border: '1px solid #646cff',
+    padding: '0.6rem 1.2rem',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    '&:hover': {
+      backgroundColor: '#646cff',
+      transform: 'translateY(-2px)'
+    }
   }
 };
 
