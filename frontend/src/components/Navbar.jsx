@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 const styles = {
   navbar: {
@@ -54,12 +55,68 @@ const styles = {
 };
 
 function Navbar() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
+
+  const checkLoginStatus = async () => {
+    try {
+      const response = await fetch('/api/users/check-auth', {
+        credentials: 'include'
+      });
+      setIsLoggedIn(response.ok);
+    } catch (error) {
+      setIsLoggedIn(false);
+    }
+  };
+
+  useEffect(() => {
+    // Check login status when component mounts
+    checkLoginStatus();
+
+    // Add event listener for auth changes
+    const handleAuthChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener('auth-change', handleAuthChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/users/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        setIsLoggedIn(false);
+        window.dispatchEvent(new Event('auth-change'));
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   return (
     <nav style={styles.navbar}>
-      <div style={styles.brand}><Link to="/">Fisher Watch</Link></div>
+      <div style={styles.brand}>
+        <Link to="/">Fisher Watch</Link>
+      </div>
       <div style={styles.nav}>
-        <Link to="/data" style={styles.link}>Data</Link>
-        <Link to="/map" style={styles.link}>Map</Link>
+        {isLoggedIn ? (
+          <>
+            <Link to="/data" style={styles.link}>Data</Link>
+            <Link to="/map" style={styles.link}>Map</Link>
+            <button onClick={handleLogout} style={styles.logoutButton}>
+              Logout
+            </button>
+          </>
+        ) : null}
       </div>
     </nav>
   );

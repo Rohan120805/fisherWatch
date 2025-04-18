@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../utils/axios';
 
 const LoginForm = ({ onLogin }) => {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ const LoginForm = ({ onLogin }) => {
       
       if (response.status === 200) {
         onLogin();
+        navigate('/'); // Redirect to home page instead of data page
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');

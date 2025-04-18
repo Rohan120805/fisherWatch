@@ -44,6 +44,14 @@ export const login = async (req, res) => {
   }
 };
 
+export const checkAuth = (req, res) => {
+    if (req.session.userId) {
+      res.status(200).json({ authenticated: true });
+    } else {
+      res.status(401).json({ authenticated: false });
+    }
+};
+
 export const logout = (req, res) => {
   req.session.destroy();
   res.status(200).json({ message: 'Logged out successfully' });

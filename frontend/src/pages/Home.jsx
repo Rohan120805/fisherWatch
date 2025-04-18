@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar.jsx';
 
@@ -50,7 +50,35 @@ function Home() {
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+
+  const checkLoginStatus = async () => {
+    try {
+      const response = await fetch('/api/users/check-auth', {
+        credentials: 'include'
+      });
+      setIsLoggedIn(response.ok);
+    } catch (error) {
+      setIsLoggedIn(false);
+    }
+  };
+
+  useEffect(() => {
+    checkLoginStatus();
+    
+    // Add event listener for auth changes
+    const handleAuthChange = () => {
+      checkLoginStatus();
+    };
+
+    window.addEventListener('auth-change', handleAuthChange);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth-change', handleAuthChange);
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,7 +97,9 @@ function Home() {
         throw new Error(data.message || 'Login failed');
       }
 
-      navigate('/data');
+      window.dispatchEvent(new Event('auth-change'));
+      setIsLoggedIn(true);
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
@@ -80,29 +110,31 @@ function Home() {
       <h1>Welcome to Fisher Watch</h1>
       <p>A place where the Towers are watched.</p>
       
-      <form onSubmit={handleSubmit} style={styles.form}>
-        <h2>Login</h2>
-        {error && <div style={styles.error}>{error}</div>}
-        <input
-          type="text"
-          placeholder="User ID"
-          value={userId}
-          onChange={(e) => setUserId(e.target.value)}
-          style={styles.input}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-          required
-        />
-        <button type="submit" style={styles.button}>
-          Login
-        </button>
-      </form>
+      {!isLoggedIn && (
+        <form onSubmit={handleSubmit} style={styles.form}>
+          <h2>Login</h2>
+          {error && <div style={styles.error}>{error}</div>}
+          <input
+            type="text"
+            placeholder="User ID"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={styles.input}
+            required
+          />
+          <button type="submit" style={styles.button}>
+            Login
+          </button>
+        </form>
+      )}
     </div>
   );
 }
