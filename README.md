@@ -186,3 +186,19 @@ npm run dev
 ```bash
 npm run deploy
 ```
+
+### User Management
+
+#### Creating a New User
+1. **Register User**
+```bash
+POST https://localhost:5000/api/users/register
+```
+```bash
+Content-Type: application/json
+
+{
+    "userId": "your_user_id",
+    "password": "your_password"
+}
+```
