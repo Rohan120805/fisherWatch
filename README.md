@@ -202,3 +202,9 @@ Content-Type: application/json
     "password": "your_password"
 }
 ```
+
+If you want to disable "Register New User Feature", go to backend\controllers\user.controller.js and remove 'register' function and remove
+```bash
+router.post('/register', register);
+```
+line from backend\routes\user.routes.js.
