@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
-import towerRoutes from './routes/tower.routes.js';
+import { addOrUpdateTowers, getTowers } from './controllers/tower.controller.js';
 import userRoutes from './routes/user.routes.js';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -71,8 +71,9 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 // Auth routes - no authentication required
 app.use('/api/users', userRoutes);
 
-// Protected routes - require authentication
-app.use('/api', requireAuth, towerRoutes);
+// Tower routes - POST without auth, GET with auth
+app.post('/api/towers', addOrUpdateTowers); // No auth required
+app.get('/api/towers', requireAuth, getTowers); // Auth required
 
 // Serve frontend
 app.get('*', (req, res) => {
