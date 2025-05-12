@@ -734,8 +734,8 @@ function Data() {
               <th style={styles.th}>CI</th>
               <th style={styles.th}>PCI</th>
               <th style={styles.th}>Frequency</th>
-              <th style={styles.th}>Signal Power</th>
-              <th style={styles.th}>Signal Quality</th>
+              <th style={styles.th}>Signal Power (dBm)</th>
+              <th style={styles.th}>Signal Quality (dB)</th>
               <th style={styles.th}>Last Updated</th>
               <th style={styles.th}>Actions</th>
             </tr>
