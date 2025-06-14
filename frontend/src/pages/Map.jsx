@@ -303,12 +303,10 @@ function Map() {
     const ci = params.get('ci');
 
     if (lat && lon) {
-      // Set initial center to the tower's location
       setInitialCenter([parseFloat(lat), parseFloat(lon)]);
       setInitialZoom(18); // Set a closer zoom level
     }
 
-    // Highlight the specific tower if CI is provided
     if (ci) {
       setHighlightedTower(ci);
     }
@@ -449,7 +447,7 @@ function Map() {
                 icon={getIcon(
                   tower.analysis_report.score, 
                   tower.kingfisher_id_changed,
-                  highlightedTower === tower.ci.toString() // Add highlighted state
+                  highlightedTower === tower.ci.toString()
                 )}
               >
                 <Popup>

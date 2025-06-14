@@ -67,14 +67,12 @@ function Home() {
   useEffect(() => {
     checkLoginStatus();
     
-    // Add event listener for auth changes
     const handleAuthChange = () => {
       checkLoginStatus();
     };
 
     window.addEventListener('auth-change', handleAuthChange);
 
-    // Cleanup
     return () => {
       window.removeEventListener('auth-change', handleAuthChange);
     };

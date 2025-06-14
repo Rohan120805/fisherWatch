@@ -62,7 +62,6 @@ const requireAuth = (req, res, next) => {
   next();
 };
 
-// Connect to MongoDB
 connectDB();
 
 // API routes

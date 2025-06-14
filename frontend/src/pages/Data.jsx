@@ -190,9 +190,9 @@ const styles = {
     gap: '0.25rem'
   },
   scoreColors: {
-    zero: 'rgba(40, 167, 69, 0.3)',   // green
-    middle: 'rgba(255, 85, 0, 0.3)',  // orange
-    high: 'rgba(255, 0, 25, 0.3)',    // red
+    zero: 'rgba(40, 167, 69, 0.3)',
+    middle: 'rgba(255, 85, 0, 0.3)',
+    high: 'rgba(255, 0, 25, 0.3)',
   }
 };
 
@@ -520,7 +520,6 @@ function getRelativeTime(dateString) {
   const now = new Date();
   const diff = now - date;
 
-  // Convert milliseconds to different units
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
@@ -628,7 +627,6 @@ function Data() {
       if (!response.ok) throw new Error('Failed to fetch tower data');
       const fetchedData = await response.json();
       
-      // If it's a manual update (button click), update directly
       setStopChecking(false);
       setTowers(fetchedData);
       setNewDataArrived(false);
@@ -799,7 +797,7 @@ function Data() {
                         }
                       }}
                       disabled={!tower.analysis_report?.pcaps[0]?.gnss_position}
-                      title="Show on Map" // Adds tooltip on hover
+                      title="Show on Map"
                     >
                       <img 
                         src="assets\mapIcon.png" 

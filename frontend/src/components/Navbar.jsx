@@ -94,7 +94,6 @@ function Navbar() {
       const newLoggedIn = response.ok;
       setIsLoggedIn(newLoggedIn);
       
-      // Set login time when user first logs in
       if (!wasLoggedIn && newLoggedIn) {
         const now = new Date();
         setLoginTime(now);
@@ -128,7 +127,6 @@ function Navbar() {
           }
         }
         
-        // Update last checked time
         setLastCheckedTime(new Date());
       }
     } catch (error) {

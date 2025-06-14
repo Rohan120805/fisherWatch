@@ -18,14 +18,11 @@ export const addOrUpdateTowers = async (req, res) => {
       .replace('T', '_')
       .replace('Z', '');
       
-    // Create filename
     const filename = `${data.kingfisher_id}_${timestamp}.json`;
     const savePath = path.join('data', filename);
 
-    // Ensure directory exists
     await fs.mkdir(path.dirname(savePath), { recursive: true });
 
-    // Save raw data to file
     await fs.writeFile(savePath, JSON.stringify(data, null, 2));
 
     

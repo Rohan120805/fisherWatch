@@ -5,7 +5,6 @@ import path from 'path';
 import https from 'https';
 import dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
 export default defineConfig({

@@ -18,7 +18,7 @@ const LoginForm = ({ onLogin }) => {
       
       if (response.status === 200) {
         onLogin();
-        navigate('/'); // Redirect to home page instead of data page
+        navigate('/');
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
