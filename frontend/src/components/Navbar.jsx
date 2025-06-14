@@ -81,6 +81,8 @@ function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [rogueTowers, setRogueTowers] = useState(0);
   const [lastDetection, setLastDetection] = useState(null);
+  const [loginTime, setLoginTime] = useState(null);
+  const [lastCheckedTime, setLastCheckedTime] = useState(null);
   const navigate = useNavigate();
 
   const checkLoginStatus = async () => {
@@ -88,7 +90,16 @@ function Navbar() {
       const response = await fetch('/api/users/check-auth', {
         credentials: 'include'
       });
-      setIsLoggedIn(response.ok);
+      const wasLoggedIn = isLoggedIn;
+      const newLoggedIn = response.ok;
+      setIsLoggedIn(newLoggedIn);
+      
+      // Set login time when user first logs in
+      if (!wasLoggedIn && newLoggedIn) {
+        const now = new Date();
+        setLoginTime(now);
+        setLastCheckedTime(now);
+      }
     } catch (error) {
       setIsLoggedIn(false);
     }
@@ -101,18 +112,24 @@ function Navbar() {
       });
       if (response.ok) {
         const towers = await response.json();
-        const latestTimestamp = Math.max(...towers.map(t => 
-          new Date(t.last_modified || t.updatedAt).getTime()
-        ));
-        const rogueTowers = towers.filter(tower => 
-          tower.analysis_report?.score === 100 && 
-          new Date(tower.last_modified || tower.updatedAt).getTime() === latestTimestamp
-        );
+        
+        if (lastCheckedTime) {
+          const newRogueTowers = towers.filter(tower => {
+            const towerTime = new Date(tower.last_modified || tower.updatedAt);
+            return tower.analysis_report?.score === 100 && towerTime > lastCheckedTime;
+          });
 
-        setRogueTowers(rogueTowers.length);
-        if (rogueTowers.length > 0) {
-          setLastDetection(new Date(latestTimestamp));
+          if (newRogueTowers.length > 0) {
+            setRogueTowers(newRogueTowers.length);
+            const latestTime = Math.max(...newRogueTowers.map(t => 
+              new Date(t.last_modified || t.updatedAt).getTime()
+            ));
+            setLastDetection(new Date(latestTime));
+          }
         }
+        
+        // Update last checked time
+        setLastCheckedTime(new Date());
       }
     } catch (error) {
       console.error('Failed to fetch tower data:', error);
@@ -146,6 +163,10 @@ function Navbar() {
       });
       if (response.ok) {
         setIsLoggedIn(false);
+        setLoginTime(null);
+        setLastCheckedTime(null);
+        setRogueTowers(0);
+        setLastDetection(null);
         window.dispatchEvent(new Event('auth-change'));
         navigate('/');
       }
